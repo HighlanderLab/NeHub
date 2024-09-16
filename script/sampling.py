@@ -17,7 +17,7 @@ li=[]
 with open(args.input, "r") as f:
     line = f.readline()
     while line!="":
-        li.appand(line)
+        li.append(line)
         line = f.readline()
 
 
@@ -39,4 +39,4 @@ bootstrap_samples = bootstrap_sample(li, sample_size, num_sampling)
 for i, sample in enumerate(bootstrap_samples):
     with open(os.path.join(args.output,f"sampling{i}.txt"), "w") as f:
         
-        f.write(sample.join(""))
+        f.write("".join(sample))
