@@ -62,11 +62,7 @@ rule run_gone:
     params:
         GONE=config["GONE_path"],  # GONE path from config
         vcfdir=lambda wildcards: vcfdir
-    log: 
-        # Log file path
-        expand(f'{workDir}/{new_work_folder}/sampling{{num}}/GONE.stdout', num=range(config["numSampling"])),
-        expand(f'{workDir}/{new_work_folder}/sampling{{num}}/GONE.stderr', num=range(config["numSampling"]))
-    threads: 5
+    threads: 4
     shell:
         '''
         parallel -j {threads} '
@@ -79,6 +75,6 @@ rule run_gone:
             ln -sf {params.vcfdir}/INPUT_PARAMETERS_FILE ./INPUT_PARAMETERS_FILE
 
             # Run the GONE script
-            time bash script_GONE.sh data > {log[0]} 2> {log[1]}
+            time bash script_GONE.sh data > "GONE.stdout" 2> "GONE.stderr"
         ' ::: {input}
         '''

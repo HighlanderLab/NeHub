@@ -30,3 +30,8 @@ snakemake -j 4 -s snakefile
 snakemake -j 4 -s snakefile --config vcffile="dec0.vcf.gz"
 # config in command line is proior, so it will cover the original one.
 ```
+
+# cluster
+```
+snakemake -j 8 -s snakefile --drmaa " -l h_vmem=32G" --config vcffile="dec0.vcf.gz" --jobscript ./profile/jobscript.sh &
+```
