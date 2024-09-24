@@ -24,3 +24,9 @@ qlogin -l h_vmem=4G
 cd ./ne-traj-pipe
 snakemake -j 4 -s snakefile
 ```
+
+# If you need reset one of input in config
+```
+snakemake -j 4 -s snakefile --config vcffile="dec0.vcf.gz"
+# config in command line is proior, so it will cover the original one.
+```

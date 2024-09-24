@@ -69,7 +69,7 @@ rule run_gone:
     threads: 5
     shell:
         '''
-        parallel --citation -j {threads} '
+        parallel -j {threads} '
             folder_name=$(dirname {{}})  # Get the folder for each file
             cd "$folder_name"
 
