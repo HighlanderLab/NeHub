@@ -17,10 +17,10 @@ Sampling
 
 
 # Run on Eddie, interactive node
-'''
+```
 module load anaconda
 conda activate HLab_tsinfer
 qlogin -l h_vmem=4G
 cd ./ne-traj-pipe
 snakemake -j 4 -s snakefile
-'''
+```
