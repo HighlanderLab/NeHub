@@ -1,0 +1,12 @@
+{
+    "__default__": {
+        "mem": "4G",
+        "threads": "1",
+        "time": "10:00:00"
+    },
+    "run_gone": {
+        "mem": "16G",
+        "threads": "4",
+        "time": "24:00:00"
+    }
+}
