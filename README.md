@@ -15,8 +15,9 @@ Sampling
 |Fastsimcoal2|sfs|https://cmpg.unibe.ch/software/fastsimcoal2/|
 |Dadi |sfs|https://dadi.readthedocs.io/en/latest/|
 
-'''
+
 # Run on Eddie, interactive node
+'''
 module load anaconda
 conda activate HLab_tsinfer
 qlogin -l h_vmem=4G
