@@ -15,7 +15,6 @@ Sampling
 |Fastsimcoal2|sfs|https://cmpg.unibe.ch/software/fastsimcoal2/|
 |Dadi |sfs|https://dadi.readthedocs.io/en/latest/|
 
-
 # Run on Eddie, interactive node
 ```
 module load anaconda
@@ -32,6 +31,7 @@ snakemake -j 4 -s snakefile --config vcffile="dec0.vcf.gz"
 ```
 
 # cluster
+before run cluster, please check drmaa path in your ```~/.bash_profile``` or equivalent: ```export DRMAA_LIBRARY_PATH=/exports/applications/gridengine/ge-8.6.5/lib/lx-amd64/libdrmaa.so```
 ```
-snakemake -j 8 -s snakefile --drmaa " -l h_vmem=32G" --config vcffile="dec0.vcf.gz" --jobscript ./profile/jobscript.sh &
+snakemake -j 8 -profile profile --config vcffile="dec0.vcf.gz" &
 ```
