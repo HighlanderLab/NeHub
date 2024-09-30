@@ -10,7 +10,8 @@ Sampling
 |PSMC|fastq |https://github.com/lh3/psmc|
 |SMC++ | vcf.gz|https://github.com/popgenmethods/smcpp|
 |pHlash | vcf.gz| https://github.com/jthlab/phlash|
-|Relate (ARG)| ts or (anc.gz and mut.gz)|https://myersgroup.github.io/relate/|
+|tskit(tsinfer and ts date)|ts|https://tskit.dev/|
+|Relate (ARG)| haps and sample|https://myersgroup.github.io/relate/|
 |IBDNe |plink file .bim .bed .fam|https://github.com/hennlab/AS-IBDNe|
 |Fastsimcoal2|sfs|https://cmpg.unibe.ch/software/fastsimcoal2/|
 |Dadi |sfs|https://dadi.readthedocs.io/en/latest/|
@@ -33,5 +34,9 @@ snakemake -j 4 -s snakefile --config vcffile="dec0.vcf.gz"
 # cluster
 before run cluster, please check drmaa path in your ```~/.bash_profile``` or equivalent: ```export DRMAA_LIBRARY_PATH=/exports/applications/gridengine/ge-8.6.5/lib/lx-amd64/libdrmaa.so```
 ```
-snakemake -j 8 -profile profile --config vcffile="dec0.vcf.gz" &
+snakemake -j 8 --profile profile --config vcffile="dec0.vcf.gz" &
+```
+OR to run snakemake in the background, with output redirected to a file, and prevent the process from hanging after the command is sent to the background
+```
+snakemake -j 8 --profile profile --config vcffile="dec0.vcf.gz" > ../script/GONE_pipeline/snakemake_output.log 2>&1 &
 ```

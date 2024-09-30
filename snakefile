@@ -62,7 +62,6 @@ rule run_gone:
     params:
         GONE=config["GONE_path"],  # GONE path from config
         vcfdir=lambda wildcards: vcfdir
-    threads: 4
     shell:
         '''
         parallel -j {threads} '
