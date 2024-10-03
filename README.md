@@ -33,10 +33,21 @@ snakemake -j 4 -s snakefile --config vcffile="dec0.vcf.gz"
 
 # cluster
 before run cluster, please check drmaa path in your ```~/.bash_profile``` or equivalent: ```export DRMAA_LIBRARY_PATH=/exports/applications/gridengine/ge-8.6.5/lib/lx-amd64/libdrmaa.so```
+Also must login a node, otherwise report error 
 ```
-snakemake -j 8 --profile profile --config vcffile="dec0.vcf.gz" &
+OpenBLAS blas_thread_init: pthread_create failed for thread 7 of 16: Resource temporarily unavailable
+OpenBLAS blas_thread_init: RLIMIT_NPROC 200 current, 200 max
+```
+
+```
+snakemake --profile profile --config vcffile="./test_data/dec0" &
 ```
 OR to run snakemake in the background, with output redirected to a file, and prevent the process from hanging after the command is sent to the background
 ```
-snakemake -j 8 --profile profile --config vcffile="dec0.vcf.gz" > ../script/GONE_pipeline/snakemake_output.log 2>&1 &
+snakemake --profile profile --config vcffile="./test_data/dec0" > ../script/GONE_pipeline/snakemake_output.log 2>&1 &
+```
+
+## check the currently running process
+```
+ps u -u [username]
 ```

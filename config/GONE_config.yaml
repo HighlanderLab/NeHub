@@ -1,8 +1,9 @@
 plinkModule: "igmm/apps/plink/1.90b7.2"
+bcftoolsModule: "roslin/bcftools/1.20"
 GONE_path: "/home/s2587593/PigData/GONE/GONE/"
-vcffile: "con0.vcf.gz"
-vcfdir: "/home/s2587593/PigData/ne-traj-pipe/test_data/"
-sampleList: "/home/s2587593/PigData/ne-traj-pipe/test_data/sampleList.txt"
+GONE_setting: "/home/s2587593/PigData/ne-traj-pipe/config/INPUT_PARAMETERS_FILE"
+vcffile: "/home/s2587593/PigData/ne-traj-pipe/test_data/con0"
 workdir: "/home/s2587593/PigData/NeTest"
-numSampling: 10
+numSampling: 2
 sampleSize: 30
+Method: ['GONE']
