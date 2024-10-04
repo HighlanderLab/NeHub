@@ -4,17 +4,19 @@ Pipeline to infer population size trajectories using a variety of tools
 Sampling
 
 
-|Tools| input| link|
-|-----|-----|---|
-|GONE | plink file .ped .bim|https://github.com/esrud/GONE|
-|PSMC|fastq |https://github.com/lh3/psmc|
-|SMC++ | vcf.gz|https://github.com/popgenmethods/smcpp|
-|pHlash | vcf.gz| https://github.com/jthlab/phlash|
-|tskit(tsinfer and ts date)|ts|https://tskit.dev/|
-|Relate (ARG)| haps and sample|https://myersgroup.github.io/relate/|
-|IBDNe |plink file .bim .bed .fam|https://github.com/hennlab/AS-IBDNe|
-|Fastsimcoal2|sfs|https://cmpg.unibe.ch/software/fastsimcoal2/|
-|Dadi |sfs|https://dadi.readthedocs.io/en/latest/|
+|Tools| input| link| install approach|
+|-----|-----|---|---|
+|GONE | plink file .ped .bim|https://github.com/esrud/GONE|git clone|
+|PSMC|fastq |https://github.com/lh3/psmc|conda install|
+|MSMC2|fastq |https://github.com/stschiff/msmc2|conda install|
+|SMC++ | vcf.gz|https://github.com/popgenmethods/smcpp|conda install|
+|pHlash | vcf.gz| https://github.com/jthlab/phlash|pip install|
+|tskit(tsinfer and tsdate)|ts|https://tskit.dev/|conda install|
+|Relate (ARG)| haps and sample|https://myersgroup.github.io/relate/|package|
+|IBDNe |plink file .bim .bed .fam|https://github.com/hennlab/AS-IBDNe|java package|
+|Fastsimcoal2|sfs|https://cmpg.unibe.ch/software/fastsimcoal2/|conda install|
+|Dadi |sfs|https://dadi.readthedocs.io/en/latest/|conda install|
+|stairway-plot-v2|sfs|https://github.com/xiaoming-liu/stairway-plot-v2/tree/master|package|
 
 # Run on Eddie, interactive node
 ```
