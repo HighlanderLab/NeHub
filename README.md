@@ -51,3 +51,22 @@ snakemake --profile profile --config vcffile="./test_data/dec0" > ../script/GONE
 ```
 ps u -u [username]
 ```
+
+## Inference environments on Eddie
+### PSMC
+`source activate ne_pipe_psmc`  
+Origianally created as:  
+`conda create -n ne_pipe_psmc -c bioconda -c conda-forge psmc`
+
+### MSMC2
+`source activate ne_pipe_msmc2`  
+Originally created as:  
+`conda create -n ne_pipe_msmc2 -c bioconda -c conda-forge msmc2`
+
+### SMC++
+Should be run via singularity
+```
+module load singularity/3.11.4 # or similar
+export SINGULARITY_TMPDIR="\$TMPDIR"
+singularity run docker://terhorst/smcpp:latest -h # replace -h by SMC++ parameters
+```
