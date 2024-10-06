@@ -83,15 +83,12 @@ singularity run docker://terhorst/smcpp:latest -h # replace -h by SMC++ paramete
 phlash requires a GPU to run fast. THere are GPUs available on Eddie, but we probably have to play around a little to figure out how to use these. Hannes has set up two versions.
 
 #### No GPU
-```
-conda create -n ne_pipe_phlash_nogpu
-python -m pip install phlash
-```
-There were some errors during setup (pysam and dinopy, check if this works at all!
+Python venv in:  
+`/exports/cmvm/eddie/eb/groups/HighlanderLab/anaconda/envs/ne_pipe_phlash_nogpu`
+This is not a conda environment!
+
 
 #### With GPU support
-```
-conda create -n ne_pipe_phlash_gpu
-python -m pip install phlash[gpu]
-```
-Errors here, too...
+Python venv in:  
+`/exports/cmvm/eddie/eb/groups/HighlanderLab/anaconda/envs/ne_pipe_phlash_gpu`
+This is not a conda environment!
