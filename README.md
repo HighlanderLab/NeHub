@@ -72,3 +72,26 @@ module load singularity/3.11.4 # or similar
 export SINGULARITY_TMPDIR="\$TMPDIR"
 singularity run docker://terhorst/smcpp:latest -h # replace -h by SMC++ parameters
 ```
+
+### dadi-cli
+`conda create -n ne_pipe_dadiCli -c conda-forge dadi-cli` 
+
+### fastsimcoal2
+`conda create -n ne_pipe_fastsimcoal2 -c bioconda fastsimcoal2`
+
+### phlash
+phlash requires a GPU to run fast. THere are GPUs available on Eddie, but we probably have to play around a little to figure out how to use these. Hannes has set up two versions.
+
+#### No GPU
+```
+conda create -n ne_pipe_phlash_nogpu
+python -m pip install phlash
+```
+There were some errors during setup (pysam and dinopy, check if this works at all!
+
+#### With GPU support
+```
+conda create -n ne_pipe_phlash_gpu
+python -m pip install phlash[gpu]
+```
+Errors here, too...
