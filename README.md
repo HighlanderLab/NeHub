@@ -13,10 +13,10 @@ Sampling
 |pHlash | vcf.gz| https://github.com/jthlab/phlash|pip install|
 |tskit(tsinfer and tsdate)|ts|https://tskit.dev/|conda install|
 |Relate (ARG)| haps and sample|https://myersgroup.github.io/relate/|package|
-|IBDNe |plink file .bim .bed .fam|https://github.com/hennlab/AS-IBDNe|java package|
-|Fastsimcoal2|sfs|https://cmpg.unibe.ch/software/fastsimcoal2/|conda install|
+|HapNe-LD/HapNe-IBD |vcf|https://github.com/palamaraLab/hapne|pip install|
 |Dadi |sfs|https://dadi.readthedocs.io/en/latest/|conda install|
-|stairway-plot-v2|sfs|https://github.com/xiaoming-liu/stairway-plot-v2/tree/master|package|
+|Fastsimcoal2|sfs|https://cmpg.unibe.ch/software/fastsimcoal2/|conda install|
+
 
 # Run on Eddie, interactive node
 ```
