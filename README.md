@@ -42,7 +42,7 @@ OpenBLAS blas_thread_init: RLIMIT_NPROC 200 current, 200 max
 ```
 
 ```
-snakemake --profile profile --config vcffile="./test_data/dec0" &
+snakemake --profile absolute/path/to/profile --config vcffile="./test_data/dec0" &
 ```
 OR to run snakemake in the background, with output redirected to a file, and prevent the process from hanging after the command is sent to the background
 ```

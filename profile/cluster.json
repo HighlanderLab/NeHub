@@ -8,5 +8,10 @@
         "mem": "4G",
         "threads": "4",
         "time": "24:00:00"
+    },
+    "run_psmc:": {
+        "mem": "4G",
+        "threads": "4",
+        "time": "24:00:00"
     }
 }
