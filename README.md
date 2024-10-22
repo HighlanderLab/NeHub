@@ -13,6 +13,7 @@ Sampling
 |pHlash | vcf.gz| https://github.com/jthlab/phlash|pip install|
 |tskit(tsinfer and tsdate)|ts|https://tskit.dev/|conda install|
 |Relate (ARG)| haps and sample|https://myersgroup.github.io/relate/|package|
+|SINGER |vcf |https://github.com/popgenmethods/SINGER|package |
 |HapNe-LD/HapNe-IBD |vcf|https://github.com/palamaraLab/hapne|pip install|
 |Dadi |sfs|https://dadi.readthedocs.io/en/latest/|conda install|
 |Fastsimcoal2|sfs|https://cmpg.unibe.ch/software/fastsimcoal2/|conda install|
