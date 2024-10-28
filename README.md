@@ -106,13 +106,43 @@ Error:
 phlash requires a GPU to run fast. THere are GPUs available on Eddie, but we probably have to play around a little to figure out how to use these. Hannes has set up two versions.
 
 #### No GPU
-Python venv in:  
-`/exports/cmvm/eddie/eb/groups/HighlanderLab/anaconda/envs/ne_pipe_phlash_nogpu`
-This is not a conda environment!
+This is not a conda environment! Python venv in:  
+`/exports/cmvm/eddie/eb/groups/HighlanderLab/share/venvs/ne_pipe_phlash_nogpu`
 
+To activate, run:  
+```
+source /exports/cmvm/eddie/eb/groups/HighlanderLab/share/venvs/ne_pipe_phlash_nogpu/bin/activate
+# then, try
+python
+>>> import phlash
+```
+
+
+```
+##Setup code (so we remember)
+#python -m venv --copies ne_pipe_phlash_nogpu
+#source ne_pipe_phlash_nogpu/bin/activate
+#python -m pip install -U pip setuptools
+#python -m pip install 'phlash'
+```
 
 #### With GPU support
-Python venv in:  
-`/exports/cmvm/eddie/eb/groups/HighlanderLab/anaconda/envs/ne_pipe_phlash_gpu`
-This is not a conda environment!
+This is not a conda environment! Python venv in:  
+`/exports/cmvm/eddie/eb/groups/HighlanderLab/share/venvs/ne_pipe_phlash_gpu`
+ 
+To activate, run:  
+```
+source /exports/cmvm/eddie/eb/groups/HighlanderLab/share/venvs/ne_pipe_phlash_gpu/bin/activate
+# then, try
+python
+>>> import phlash
+```
+
+```
+##Setup code
+#python -m venv --copies ne_pipe_phlash_gpu
+#source ne_pipe_phlash_gpu/bin/activate
+#python -m pip install -U pip setuptools
+#python -m pip install 'phlash[gpu]'
+```
 
