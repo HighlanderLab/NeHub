@@ -1,6 +1,6 @@
 plinkModule: "igmm/apps/plink/1.90b7.2"
-vcffile: "/home/s2587593/PigData/ne-traj-pipe/test_data/con0"
+vcffile: "/home/s2587593/PigData/data_simulation/CON_cor/ccon0"
 workdir: "/home/s2587593/PigData/NeTest"
-numSampling: 2
-sampleSize: 30
-Method: ['PSMC']
+numSampling: 5
+sampleSize: 80
+Method: ['PSMC','GONE']

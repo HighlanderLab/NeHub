@@ -18,6 +18,9 @@ rule extract_sample:
     shell:
         '''
         mkdir -p {workDir}/{vcf_f}/psmc_results/
+        gunzip {input[0]}
+        bgzip {vcf}.vcf
+        tabix {input[0]}
         samples=$(awk 'NR >1 {{print $1}}' {input[1]})
         for sample in ${{samples}}; do
         cat {input[2]} |vcf-consensus -i {input[0]} -s ${{sample}}|\
@@ -32,14 +35,15 @@ rule run_psmc:
         f'{workDir}/{vcf_f}/psmc_results/{{sample}}.psmc'
     conda: "ne_pipe_psmc"
     params:
-        work_dir=lambda wildcards: f'{workDir}/{vcf_f}/psmc_results'
+        work_dir=lambda wildcards: f'{workDir}/{vcf_f}/psmc_results',
+        p = config["psmc_setting"]
     shell:
         '''
         cd {params.work_dir}
         parallel -j {threads} '
         base_name=$(basename {{}} .fq.gz)
         fq2psmcfa -q0 {{}} > ${{base_namev}}.psmcfa
-        psmc -N25 -t9 -r5 -p "4+25*2+4+6" ${{base_namev}}.psmcfa -o ${{base_name}}.psmc
+        psmc -N25 -t9 -r5 -p {params.p} ${{base_namev}}.psmcfa -o ${{base_name}}.psmc
         ' ::: {input}
         '''
 

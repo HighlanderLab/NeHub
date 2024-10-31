@@ -1,4 +1,4 @@
-ref_genome: "/home/s2587593/PigData/ne-traj-pipe/test_data/reference_genome.fa"
-psmc_setting: "6+24*2+4+6"
+ref_genome: "/home/s2587593/PigData/data_simulation/CON_cor/reference_genome.fa"
+psmc_setting: "4+50*1+4+6"
 bin_size: 100
-mutation_rate: 10e-8
+mutation_rate: 4.8e-8
