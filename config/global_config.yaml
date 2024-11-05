@@ -1,6 +1,8 @@
-plinkModule: "igmm/apps/plink/1.90b7.2"
+plinkModule: "igmm/apps/plink/1.90b4" # notice the plink path often change, please priorer to check it 
 vcffile: "/home/s2587593/PigData/data_simulation/CON_cor/ccon0"
+ref_genome: "/home/s2587593/PigData/data_simulation/CON_cor/reference_genome.fa"
+ancestral_genome: "/home/s2587593/PigData/data_simulation/CON_cor/reference_genome.fa"
 workdir: "/home/s2587593/PigData/NeTest"
 numSampling: 5
 sampleSize: 80
-Method: ['PSMC','GONE']
+Method: ['PSMC','GONE'] 

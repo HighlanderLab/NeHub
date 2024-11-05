@@ -11,6 +11,10 @@ if "GONE" in config["Method"]:
     include: "rules/sampling_vcf.smk",
     include: "rules/rGONE.smk"
 
+# ts is ready, but tskit version is behind 
+# if 'Tskit' in config["Method"]:
+#     include: "rules/rTskit.smk"
+
 if 'PSMC' in config["Method"]:
     include: "rules/rPSMC.smk"
 
@@ -18,4 +22,6 @@ rule all:
     input:
         expand(f'{workDir}/{vcf_f}/{{Method}}_results.json', Method=config["Method"])
 
-
+# rulr run_tskit:
+#     input:
+        

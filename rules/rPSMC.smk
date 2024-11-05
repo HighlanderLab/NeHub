@@ -18,9 +18,7 @@ rule extract_sample:
     shell:
         '''
         mkdir -p {workDir}/{vcf_f}/psmc_results/
-        gunzip {input[0]}
-        bgzip {vcf}.vcf
-        tabix {input[0]}
+        tabix -f {input[0]}
         samples=$(awk 'NR >1 {{print $1}}' {input[1]})
         for sample in ${{samples}}; do
         cat {input[2]} |vcf-consensus -i {input[0]} -s ${{sample}}|\
@@ -43,7 +41,7 @@ rule run_psmc:
         parallel -j {threads} '
         base_name=$(basename {{}} .fq.gz)
         fq2psmcfa -q0 {{}} > ${{base_namev}}.psmcfa
-        psmc -N25 -t9 -r5 -p {params.p} ${{base_namev}}.psmcfa -o ${{base_name}}.psmc
+        psmc -N25 -t20 -r5 -p {params.p} ${{base_namev}}.psmcfa -o ${{base_name}}.psmc
         ' ::: {input}
         '''
 

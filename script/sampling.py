@@ -17,12 +17,18 @@ parser.add_argument("-b", "--block_size", type=int, default=1, help="Block size,
 # Parse the command-line arguments
 args = parser.parse_args()
 # Define the total set of numbers (for example, from 1 to 40)
-li=[]
+dic={}
 with open(args.input, "r") as f:
     title = f.readline()
     line = f.readline()
     while line!="":
-        li.append(line.split("\t")[0])
+        ind=line.strip("\n").split("\t")[0]
+        pop=line.strip("\n").split("\t")[1]
+        if ind in dic:
+            print("Please check id, there is repeat individual")
+            break
+        else:
+            dic[ind]=pop
         line = f.readline()
         
 
@@ -57,9 +63,14 @@ if args.sampling_method == "bootstrap":
     # Perform bootstrap sampling
     num_sampling = args.num_sampling  # Number of bootstrap samples
     sample_size = args.sample_size  # Number of elements in each sample
+    li=[key for key in dic.keys()]
     bootstrap_samples = bootstrap_sample(li, sample_size, num_sampling)
 
     # Write the results to the output file
     for i, sample in enumerate(bootstrap_samples):
         with open(os.path.join(args.output,f"sampling{i}.txt"), "w") as f:
             f.write("\n".join(sample))
+        with open(os.path.join(args.output,f"sampling{i}.popLabel"), "w") as f:
+            f.write(title)
+            for k in sample:
+                f.write(f"{k}\t{dic[k]}\n")
