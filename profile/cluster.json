@@ -6,7 +6,7 @@
     },
     "run_gone": {
         "mem": "4G",
-        "threads": "4",
+        "threads": "8",
         "time": "48:00:00"
     },
     "run_tsinfer": {
@@ -14,8 +14,23 @@
         "threads": "4",
         "time": "48:00:00"
     },
+    "run_prepare_ts": {
+        "mem": "16G",
+        "threads": "8",
+        "time": "48:00:00"
+    },
     "run_psmc:": {
         "mem": "4G",
+        "threads": "8",
+        "time": "48:00:00"
+    },
+    "run_MSMC:": {
+        "mem": "16G",
+        "threads": "8",
+        "time": "48:00:00"
+    },
+    "run_SMCpp":{
+        "mem": "16G",
         "threads": "8",
         "time": "48:00:00"
     }

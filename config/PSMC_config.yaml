@@ -1,3 +1,2 @@
 psmc_setting: "4+50*1+4+6"
 bin_size: 100
-mutation_rate: 4.8e-8

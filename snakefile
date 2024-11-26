@@ -7,21 +7,16 @@ workDir=config["workdir"]
 vcf=config["vcffile"]
 _, vcf_f = os.path.split(vcf)
 
-if "GONE" in config["Method"]:
-    include: "rules/sampling_vcf.smk",
-    include: "rules/rGONE.smk"
+include: "rules/sampling_vcf.smk"
+for method in config["Method"]:
+    include: f"rules/r{method}.smk"
 
-# ts is ready, but tskit version is behind 
-# if 'Tskit' in config["Method"]:
-#     include: "rules/rTskit.smk"
-
-if 'PSMC' in config["Method"]:
-    include: "rules/rPSMC.smk"
-
+# MSMC's covers up to two groups
+# SMCpp covers up to two groups
+# chromosome must be named chr* in stead of number, otherwise it will cause the failure of SMCpp
 rule all:
     input:
         expand(f'{workDir}/{vcf_f}/{{Method}}_results.json', Method=config["Method"])
 
-# rulr run_tskit:
-#     input:
-        
+
+

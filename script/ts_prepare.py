@@ -1,11 +1,12 @@
 import cyvcf2
 from tqdm import tqdm
 import tskit
-import tsdate
 import tsinfer
 import os
 import glob
 from Bio import SeqIO
+import argparse
+
 
 #https://tskit.dev/tsinfer/docs/stable/tutorial.html#reading-a-vcf
 def add_diploid_sites(vcf, samples,ancestral_fa):
@@ -59,38 +60,41 @@ def chromosome_length(vcf):
     assert len(vcf.seqlens) == 1
     return vcf.seqlens[0]
 
-import argparse
-
 # Create an ArgumentParser object
 parser = argparse.ArgumentParser(description="Process some integers.")
 
 # Add arguments
 parser.add_argument('--vcf', type=str, required=True, help='Path to the VCF file')
-parser.add_argument('--ancestal', type=str, required=True, help='Path to the ancestral genome fa file')
-parser.add_argument('--popLabel', type=str, required=True, help='Path to the popLabel file')
+parser.add_argument('--ancestral', type=str, required=True, help='Path to the ancestral genome fa file')
+parser.add_argument('--max_file_size', type=int, default=4*500*1024*1024 ,help='max_file_size of Zarr')
+parser.add_argument('--chunk_size', type=int, default = 2*1024, help='chunk_size of Zarr')
+
 # Parse arguments
 args = parser.parse_args()
 
+input = args.vcf
+
 # build new folder for samples
-directory_path=os.path.dirname(args.vcf)
-
+directory_path=os.path.dirname(input)
+basename=os.path.basename(input)
+basename = basename.removesuffix(".vcf.gz")
+output_directory = os.path.join(directory_path,"./tskit_results/")
 # Check if the directory exists
-if not os.path.exists(directory_path):
+if not os.path.exists(output_directory):
     # Create the directory
-    os.makedirs("tskit_results")
+    os.mkdir(output_directory)
 
-output_directory = os.path.join(directory_path,"tskit_results")
-vcffile_name=os.path.basename(args.vcf)
-outputname = vcffile_name.removesuffix(".vcf.gz")
 
-vcf_location = args.vcf # "ccon0.vcf.gz"
-# NB: could also read from an online version by setting vcf_location to
-# "https://github.com/tskit-dev/tsinfer/raw/main/docs/_static/P_dom_chr24_phased.vcf.gz"
+
+
+vcf_location = input # "ccon0.vcf.gz"
+    # NB: could also read from an online version by setting vcf_location to
+    # "https://github.com/tskit-dev/tsinfer/raw/main/docs/_static/P_dom_chr24_phased.vcf.gz"
 
 vcf = cyvcf2.VCF(vcf_location)
 
 # ancestral genome
-fasta_file = args.ancestal # "reference_genome.fa"
+fasta_file = args.ancestral # "reference_genome.fa"
 SeqIO.parse(fasta_file, "fasta")
 # Read the FASTA file
 ancestral_fa={}
@@ -98,7 +102,7 @@ for record in SeqIO.parse(fasta_file, "fasta"):
     ancestral_fa[record.id]=record
 
 # population label
-popLabel= args.popLabel # "ccon0.popLabel"
+popLabel= vcf_location.replace(".vcf.gz", ".popLabel")
 poplabel_dic={}
 with open(popLabel, "r") as f:
     f.readline()
@@ -113,18 +117,18 @@ with open(popLabel, "r") as f:
             poplabel_dic[pop].append(indi)
         line=f.readline()
 
-# "ccon0.samples"
+    # "ccon0.samples"
 
 with tsinfer.SampleData(
-    path= os.path.join(output_directory,outputname)+".samples", sequence_length=chromosome_length(vcf),max_file_size=4*500*1024*1024,chunk_size=2*1024,
-) as samples:
-    add_pop_indi(poplabel_dic,samples)
-    add_diploid_sites(vcf, samples, ancestral_fa)
+        path= os.path.join(output_directory,f"{basename}.samples"), sequence_length=chromosome_length(vcf),max_file_size=args.max_file_size,chunk_size=args.chunk_size,
+        ) as samples:
+        add_pop_indi(poplabel_dic,samples)
+        add_diploid_sites(vcf, samples, ancestral_fa)
     
 print(
-    "Sample file created for {} samples ".format(samples.num_samples)
-    + "({} individuals) ".format(samples.num_individuals)
-    + "with {} variable sites.".format(samples.num_sites),
-    flush=True,
-)
+        "Sample file created for {} samples ".format(samples.num_samples)
+        + "({} individuals) ".format(samples.num_individuals)
+        + "with {} variable sites.".format(samples.num_sites),
+        flush=True,
+    )
 

@@ -2,40 +2,45 @@ configfile: "./config/tskit_config.yaml"
 
 rule run_prepare_ts:
     input:
-        vcf = f'{workDir}/{vcf_f}/{{file_number}}.vcf.gz'
-        ancestal = config["ancestral_genome"]
-        popLabel = f'{workDir}/{vcf_f}/{{file_number}}.popLabel'
+        f'{workDir}/{vcf_f}/sampling{{num}}.vcf.gz'
     output:
-        # Expanding OUTPUT_data for each sampling number
-        expand(f'{workDir}/{vcf_f}/tskit_results/{{file_number}}.samples',file_number='{file_number}')
+        #expand(f'{workDir}/{vcf_f}/tskit_results/sampling{{number}}.samples', number=range(config["numSampling"]))
+        f'{workDir}/{vcf_f}/tskit_results/sampling{{num}}.trees'
     conda: "HLab_tsinfer"
-    script:
-        "./script/ts_infer.py"
+    params:
+        ancestal = config["ancestral_genome"]
+    shell:
+        '''
+        parallel -j {threads} '
+        python ./script/ts_prepare.py --vcf {{}} --ancestral {params.ancestal}
+        ' ::: {input}
+        '''
         
 
 rule run_tsinfer:
     input:
+        #expand(f'{workDir}/{vcf_f}/tskit_results/sampling{{number}}.samples', number=range(config["numSampling"]))
         f'{workDir}/{vcf_f}/tskit_results/{{sample_file}}.samples'
     output:
-        f'{workDir}/{vcf_f}/tskit_results/{{sample_file}}.trees'
-    conda: "HLab_tsinfer"
-    run:
-        ts = tsinfer.infer(input)
-        print(
-            "Inferred tree sequence: {} trees over {} Mb ({} edges)".format(
-        ts.num_trees, ts.sequence_length / 1e6, ts.num_edges
-                )
-                    )
-        redated_ts = tsdate.date(ts, mutation_rate=args.mutation)
-        redated_ts.dump(output)
+        f'{workDir}/{vcf_f}/tskit_results/{{sample_file}}.dated.trees'
+    conda: "treeStuff"
+    params:
+        mu=config["mutation_rate"]
+    shell:
+        '''
+        parallel -j {threads} '
+        python ./script/ts_date.py --input {{}} --mutation_rate {params.mu}
+        ' ::: {input}
+        '''
 
 
 rule summary_tsinfer:
     input:
-        ts_folder = f'{workDir}/{vcf_f}/tskit_results/'
-        timepoint = config["timepoint"]
-        output = f'{workDir}/{vcf_f}/tskit_results.json'
+        expand(f'{workDir}/{vcf_f}/tskit_results/sampling{{sample}}.dated.trees',sample=range(config["numSampling"]))
     output:
-        f'{workDir}/{vcf_f}/tskit_results.json'
+        f'{workDir}/{vcf_f}/Tskit_results.json'
+    params:
+        timepoint = config["timepoint"],
+    conda: "HLab_tsinfer"
     script:
-        "./script/ts_summary_Ne.py"
+        "../script/ts_summary_Ne.py"

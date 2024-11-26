@@ -68,8 +68,6 @@ if args.sampling_method == "bootstrap":
 
     # Write the results to the output file
     for i, sample in enumerate(bootstrap_samples):
-        with open(os.path.join(args.output,f"sampling{i}.txt"), "w") as f:
-            f.write("\n".join(sample))
         with open(os.path.join(args.output,f"sampling{i}.popLabel"), "w") as f:
             f.write(title)
             for k in sample:
