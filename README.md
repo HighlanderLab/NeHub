@@ -133,23 +133,26 @@ python
 ```
 
 #### With GPU support
-This is not a conda environment! Python venv in:  
-`/exports/cmvm/eddie/eb/groups/HighlanderLab/share/venvs/ne_pipe_phlash_gpu`
+This is a conda environment. 
+`conda activate ne_pipe_phlash_gpu`
  
 To activate, run:  
 ```
-source /exports/cmvm/eddie/eb/groups/HighlanderLab/share/venvs/ne_pipe_phlash_gpu/bin/activate
+`conda activate ne_pipe_phlash_gpu`
 # then, try
 python
 >>> import phlash
 ```
 
 ```
-##Setup code
-#python -m venv --copies ne_pipe_phlash_gpu
-#source ne_pipe_phlash_gpu/bin/activate
-#python -m pip install -U pip setuptools
-#python -m pip install 'phlash[gpu]'
+##Setup code (ran on node 2i15)
+# conda create -n ne_pipe_phlash_gpu "python=3.10"
+# conda activate ne_pipe_phlash_gpu
+# module load phys/compilers/gcc/11.2.0
+# export TMPDIR=/exports/eddie/scratch/hbecher/piptmp
+# python -m pip install 'phlash[gpu]'
+# Finished successfully #
+# Did the same without GPU support too
 ```
 #### After source I have this erorr report
 
@@ -188,6 +191,13 @@ Current thread 0x00007ffa86743740 (most recent call first):
   <no Python frame>
 ```
 
+### hapNe
+
+Have set up following the suggestions, making a conda environment using the supplied YML file.
+```
+conda activate ne_pipe_hapNe
+```
+
 # For real data, mask used to exclude Non-neutral sites and errors
 tutorial from paper (Exploring population size changes using SNP frequency spectra)
 
@@ -195,4 +205,5 @@ tutorial from paper (Exploring population size changes using SNP frequency spect
 2. mapping errors
 3. ancestral allele with low confidence 
 
-4. CpG Islands: CpG-rich regions often exhibit higher mutation rates due to spontaneous deamination. 
+4. CpG Islands: CpG-rich regions often exhibit higher mutation rates due to spontaneous deamination.
+
