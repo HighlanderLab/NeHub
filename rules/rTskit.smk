@@ -4,8 +4,7 @@ rule run_prepare_ts:
     input:
         f'{workDir}/{vcf_f}/sampling{{num}}.vcf.gz'
     output:
-        #expand(f'{workDir}/{vcf_f}/tskit_results/sampling{{number}}.samples', number=range(config["numSampling"]))
-        f'{workDir}/{vcf_f}/tskit_results/sampling{{num}}.trees'
+        f'{workDir}/{vcf_f}/tskit_results/sampling{{num}}.samples'
     conda: "HLab_tsinfer"
     params:
         ancestal = config["ancestral_genome"]
@@ -19,11 +18,10 @@ rule run_prepare_ts:
 
 rule run_tsinfer:
     input:
-        #expand(f'{workDir}/{vcf_f}/tskit_results/sampling{{number}}.samples', number=range(config["numSampling"]))
-        f'{workDir}/{vcf_f}/tskit_results/{{sample_file}}.samples'
+         f'{workDir}/{vcf_f}/tskit_results/{{sample_file}}.samples'
     output:
         f'{workDir}/{vcf_f}/tskit_results/{{sample_file}}.dated.trees'
-    conda: "treeStuff"
+    conda: "tsinferHan"
     params:
         mu=config["mutation_rate"]
     shell:
@@ -41,6 +39,6 @@ rule summary_tsinfer:
         f'{workDir}/{vcf_f}/Tskit_results.json'
     params:
         timepoint = config["timepoint"],
-    conda: "HLab_tsinfer"
+    conda: "tsinferHan"
     script:
         "../script/ts_summary_Ne.py"

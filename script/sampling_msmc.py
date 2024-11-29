@@ -84,14 +84,14 @@ for i in range(args.num_sampling):
         parameters.append([str(i+count*args.sample_size*2) for i in range(args.sample_size*2)])
         count+=1
 
-with open(os.path.join(args.workDir,"finish_flag"), "w") as f3:
-    for i in parameters:
-        f3.write(",".join(i))
-        f3.write("\n")
-    if count>1:
-        cross_coal=[]
-        for j in parameters[0]:
-            for k in parameters[1]:
-                cross_coal.append(j+"-"+k)
-        f3.write(",".join(cross_coal))
+    with open(os.path.join(args.workDir,f"./sampling{i}/finish_flag"), "w") as f3:
+        for parameter in parameters:
+            f3.write(",".join(parameter))
+            f3.write("\n")
+        if count>1:
+            cross_coal=[]
+            for j in parameters[0]:
+                for k in parameters[1]:
+                    cross_coal.append(j+"-"+k)
+            f3.write(",".join(cross_coal))
 

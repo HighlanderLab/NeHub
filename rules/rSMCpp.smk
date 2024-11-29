@@ -54,7 +54,7 @@ rule run_SMCpp:
         f'{workDir}/{vcf_f}/{{sampling}}.vcf.gz',
         f'{workDir}/{vcf_f}/SMCpp_results/{{sampling}}/params_pop.txt'
     output:
-        f'{workDir}/{vcf_f}/SMCpp_results/{{sampling}}/result.csv'
+        f'{workDir}/{vcf_f}/SMCpp_results/{{sampling}}/results.csv'
     params:
         contig = config["contig"],
         mu=config["mutation_rate"],

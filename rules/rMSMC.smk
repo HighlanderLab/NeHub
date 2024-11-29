@@ -6,7 +6,7 @@ rule sampling_MSMC:
     input:
         f'{vcf}.vcf.gz',
     output:
-        f'{workDir}/{vcf_f}/msmc_results/finish_flag'
+        f'{workDir}/{vcf_f}/msmc_results/{{sample}}/finish_flag'
     params:
         popLabel = f'{vcf}.popLabel',
         workDir = f"{workDir}/{vcf_f}/msmc_results",
@@ -23,7 +23,7 @@ rule sampling_MSMC:
 
 rule run_MSMC:
     input: 
-        f'{workDir}/{vcf_f}/msmc_results/{{sample}}/'
+        f'{workDir}/{vcf_f}/msmc_results/{{sample}}/finish_flag'
     output:
         f'{workDir}/{vcf_f}/msmc_results/{{sample}}/msmc_0.final.txt'
     conda: "ne_pipe_msmc2"
@@ -35,18 +35,19 @@ rule run_MSMC:
     shell:
         '''
         parallel -j {threads} '
-        cd {{}}
+        dir_name=$(dirname {{}})
+        cd $dir_name
         sampling_files=$(ls msmc_*.tab | tr "\\n" " ")
         # Check if the file "finish_flag" exists and read its lines into an array
         count=0
-        if [ -f "../finish_flag" ]; then
+        if [ -f "./finish_flag" ]; then
             while IFS= read -r row; do               
             p=$(echo "$row" | tr -d "\\n")
             echo "$p"
             echo "$sampling_files"
             msmc2_Linux -I $p -i {params.it} -r {params.roM} -p {params.tsp}  -o "msmc_$count" $sampling_files
             count=$((count + 1))
-            done < ../finish_flag
+            done < ./finish_flag
         fi
         ' ::: {input}
         '''
