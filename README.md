@@ -109,87 +109,20 @@ Error:
 `conda create -n ne_pipe_fastsimcoal2 -c bioconda fastsimcoal2`
 
 ### phlash
-phlash requires a GPU to run fast. THere are GPUs available on Eddie, but we probably have to play around a little to figure out how to use these. Hannes has set up two versions.
-
-#### No GPU
-This is not a conda environment! Python venv in:  
-`/exports/cmvm/eddie/eb/groups/HighlanderLab/share/venvs/ne_pipe_phlash_nogpu`
-
-To activate, run:  
-```
-source /exports/cmvm/eddie/eb/groups/HighlanderLab/share/venvs/ne_pipe_phlash_nogpu/bin/activate
-# then, try
-python
->>> import phlash
-```
-
+phlash requires a GPU to run fast. There are GPUs available on Eddie, but we probably have to play around a little to figure out how to use these. Hannes has set up two versions. The conda envs for rocky nodes are `ne_pipe_phlash_gpu_rocky` and `ne_pipe_phlash_nogpu_rocky`
 
 ```
-##Setup code (so we remember)
-#python -m venv --copies ne_pipe_phlash_nogpu
-#source ne_pipe_phlash_nogpu/bin/activate
-#python -m pip install -U pip setuptools
-#python -m pip install 'phlash'
-```
-
-#### With GPU support
-This is a conda environment. 
-`conda activate ne_pipe_phlash_gpu`
- 
-To activate, run:  
-```
-`conda activate ne_pipe_phlash_gpu`
-# then, try
-python
->>> import phlash
-```
-
-```
-##Setup code (ran on node 2i15)
-# conda create -n ne_pipe_phlash_gpu "python=3.10"
-# conda activate ne_pipe_phlash_gpu
-# module load phys/compilers/gcc/11.2.0
+##Setup code (ran on rocky node)
+# conda create -n ne_pipe_phlash_gpu_rocky "python=3.10"
+# conda activate ne_pipe_phlash_gpu_rocky
 # export TMPDIR=/exports/eddie/scratch/hbecher/piptmp
 # python -m pip install 'phlash[gpu]'
 # Finished successfully #
 # Did the same without GPU support too
+# python
+# >>> import phlash # works
 ```
-#### After source I have this erorr report
 
-```
-$ python
-Could not find platform independent libraries <prefix>
-Could not find platform dependent libraries <exec_prefix>
-Python path configuration:
-  PYTHONHOME = (not set)
-  PYTHONPATH = (not set)
-  program name = 'python'
-  isolated = 0
-  environment = 1
-  user site = 1
-  safe_path = 0
-  import site = 1
-  is in build tree = 0
-  stdlib dir = '/home/hbecher/miniconda3/lib/python3.11'
-  sys._base_executable = '/home/hbecher/miniconda3/bin/python'
-  sys.base_prefix = '/home/hbecher/miniconda3'
-  sys.base_exec_prefix = '/home/hbecher/miniconda3'
-  sys.platlibdir = 'lib'
-  sys.executable = '/exports/cmvm/eddie/eb/groups/HighlanderLab/share/venvs/ne_pipe_phlash_gpu/bin/python'
-  sys.prefix = '/home/hbecher/miniconda3'
-  sys.exec_prefix = '/home/hbecher/miniconda3'
-  sys.path = [
-    '/home/hbecher/miniconda3/lib/python311.zip',
-    '/home/hbecher/miniconda3/lib/python3.11',
-    '/home/hbecher/miniconda3/lib/python3.11/lib-dynload',
-  ]
-Fatal Python error: init_fs_encoding: failed to get the Python codec of the filesystem encoding
-Python runtime state: core initialized
-ModuleNotFoundError: No module named 'encodings'
-
-Current thread 0x00007ffa86743740 (most recent call first):
-  <no Python frame>
-```
 
 ### hapNe
 
