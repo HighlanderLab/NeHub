@@ -2,23 +2,21 @@ configfile: "./config/tskit_config.yaml"
 
 rule run_prepare_ts:
     input:
-        f'{workDir}/{vcf_f}/sampling{{num}}.vcf.gz'
+        vcffile=f'{workDir}/{vcf_f}/sampling{{num}}.vcf.gz'
     output:
-        f'{workDir}/{vcf_f}/tskit_results/sampling{{num}}.samples'
+        f'{workDir}/{vcf_f}/tskit_results/sampling{{num}}.trees'
     conda: "HLab_tsinfer"
     params:
         ancestal = config["ancestral_genome"]
     shell:
         '''
-        parallel -j {threads} '
-        python ./script/ts_prepare.py --vcf {{}} --ancestral {params.ancestal}
-        ' ::: {input}
+        python ./script/ts_prepare.py --vcf {input.vcffile} --ancestral {params.ancestal}
         '''
         
 
 rule run_tsinfer:
     input:
-         f'{workDir}/{vcf_f}/tskit_results/{{sample_file}}.samples'
+        tree=f'{workDir}/{vcf_f}/tskit_results/{{sample_file}}.trees'
     output:
         f'{workDir}/{vcf_f}/tskit_results/{{sample_file}}.dated.trees'
     conda: "tsinferHan"
@@ -26,9 +24,7 @@ rule run_tsinfer:
         mu=config["mutation_rate"]
     shell:
         '''
-        parallel -j {threads} '
-        python ./script/ts_date.py --input {{}} --mutation_rate {params.mu}
-        ' ::: {input}
+        python ./script/ts_date.py --input {input.tree} --mutation_rate {params.mu}
         '''
 
 
@@ -40,5 +36,11 @@ rule summary_tsinfer:
     params:
         timepoint = config["timepoint"],
     conda: "tsinferHan"
-    script:
-        "../script/ts_summary_Ne.py"
+    shell:
+        '''
+        if [ -z {params.timepoint} ]; then
+            python ./script/ts_summary_Ne.py --input {input} --output {output[0]}
+        else
+            python ./script/ts_summary_Ne.py --input {input} --timepoint {params.timepoint} --output {output[0]}
+        fi
+        '''

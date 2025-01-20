@@ -1,9 +1,9 @@
-plinkModule: "igmm/apps/plink/1.90b4" # notice the plink path often change, please priorer to check it 
-vcffile: "/exports/cmvm/eddie/eb/groups/HighlanderLab/share/PigData/data_simulation/CON_cor/ccon0"
-ref_genome: "/exports/cmvm/eddie/eb/groups/HighlanderLab/share/PigData/data_simulation/CON_cor/reference_genome.fa"
-ancestral_genome: "/exports/cmvm/eddie/eb/groups/HighlanderLab/share/PigData/data_simulation/CON_cor/ancestral_genome.fa"
+# plinkModule: "roslin/plink/1.09" # notice the plink path often change, please priorer to check it 
+vcffile: "/exports/cmvm/eddie/eb/groups/HighlanderLab/share/PigData/data_simulation/CON_cor/con0"
+ref_genome: "/exports/cmvm/eddie/eb/groups/HighlanderLab/share/PigData/data_simulation/CON_cor/con0.fa"
+ancestral_genome: "/exports/cmvm/eddie/eb/groups/HighlanderLab/share/PigData/data_simulation/CON_cor/con0.fa"
 workdir: "/exports/cmvm/eddie/eb/groups/HighlanderLab/share/PigData/NeTest"
 numSampling: 5
 sampleSize: 80
-Method: ['GONE','PSMC','Tskit','MSMC','SMCpp'] #,'GONE','PSMC','Tskit','MSMC','SMCpp'
+Method: ['Phlash'] #'GONE','PSMC','Tskit','MSMC','SMCpp','Relate', 'Phlash'
 mutation_rate: 4.8e-8

@@ -18,6 +18,9 @@ rule extract_sample:
     shell:
         '''
         mkdir -p {workDir}/{vcf_f}/psmc_results/
+        gunzip -c {input[0]} > {input[0]}.unzip  # Decompress to a temporary file
+        bgzip -c {input[0]}.unzip > {input[0]}   # Recompress into the original file
+        rm {input[0]}.unzip
         tabix -f {input[0]}
         samples=$(awk 'NR >1 {{print $1}}' {input[1]})
         for sample in ${{samples}}; do

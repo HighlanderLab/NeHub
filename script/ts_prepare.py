@@ -132,3 +132,9 @@ print(
         flush=True,
     )
 
+ts = tsinfer.infer(samples)
+
+print("Inferred tree sequence: {} trees over {} Mb ({} edges)".format(
+        ts.num_trees, ts.sequence_length / 1e6, ts.num_edges
+                ))
+ts.dump(os.path.join(output_directory,f"{basename}.trees"))

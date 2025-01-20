@@ -7,13 +7,12 @@ rule run_gone:
         # Expanding OUTPUT_data for each sampling number
         expand(f'{workDir}/{vcf_f}/GONE_results/{{file_number}}/Output_Ne_data',file_number='{file_number}')
     params:
-        plink_path=config["plinkModule"],
         GONE=config["GONE_path"],  # GONE path from config
         GONE_setting=config["GONE_setting"],
         work_dir=lambda wildcards: f'{workDir}/{vcf_f}/'
+    conda: ne_pipe_hapNe
     shell:
         '''
-        module load {params.plink_path}
         cd {params.work_dir}
         mkdir -p GONE_results
         cd GONE_results
