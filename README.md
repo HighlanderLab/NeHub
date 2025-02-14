@@ -189,6 +189,9 @@ Current thread 0x00007ffa86743740 (most recent call first):
   <no Python frame>
 ```
 
+GONE/easySFS/relate/stairway 
+download from git repository or software to install
+
 # For real data, mask used to exclude Non-neutral sites and errors
 tutorial from paper (Exploring population size changes using SNP frequency spectra)
 
