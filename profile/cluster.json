@@ -7,7 +7,7 @@
     "run_gone": {
         "mem": "4G",
         "threads": "8",
-        "time": "48:00:00"
+        "time": "24:00:00"
     },
     "run_tsinfer": {
         "mem": "16G",
@@ -43,6 +43,15 @@
         "mem": "16G",
         "threads": "8",
         "time": "24:00:00"
-    }
-
+    },
+    "run_phlash:": {
+        "mem": "16G",
+        "threads": "8",
+        "time": "24:00:00"
+    },
+    "run_stairway": {
+        "mem": "4G",
+        "threads": "1",
+        "time": "24:00:00"
+    },
 }

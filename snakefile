@@ -16,6 +16,7 @@ if not os.path.exists(log_dir):
 if any(method not in {"PSMC", "MSMC"} for method in config["Method"]):
     include: "rules/sampling_vcf.smk"
 
+
 for method in config["Method"]:
     include: f"rules/r{method}.smk"
 

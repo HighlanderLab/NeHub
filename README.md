@@ -9,12 +9,12 @@ Sampling samples
 |PSMC|fastq |https://github.com/lh3/psmc|conda install|yes|Yes|
 |MSMC2|vcf |https://github.com/stschiff/msmc2; https://github.com/stschiff/msmc-tools/ |conda install, git clone|yes|Yes|
 |SMC++ | vcf.gz|https://github.com/popgenmethods/smcpp|conda install|No|Yes|
-|pHlash | vcf.gz| https://github.com/jthlab/phlash|pip install|No|Testing|
+|pHlash | vcf.gz| https://github.com/jthlab/phlash|pip install|No|Yes|
 |tskit(tsinfer and tsdate)|ts|https://tskit.dev/|conda install|No|Yes|
-|Relate (ARG)| haps and sample|https://myersgroup.github.io/relate/|package|No|Testing|
-|HapNe-LD/HapNe-IBD |vcf|https://github.com/palamaraLab/hapne|pip install|No|-|
-|Stairway Plot v2|SFS|https://github.com/xiaoming-liu/stairway-plot-v2|No|-|
-|SINGER |vcf |https://github.com/popgenmethods/SINGER|package ||-|
+|Relate (ARG)| haps and sample|https://myersgroup.github.io/relate/|package|No|Yes|
+|Stairway Plot v2|SFS|https://github.com/xiaoming-liu/stairway-plot-v2|No|testing|
+|HapNe-LD/HapNe-IBD |vcf|https://github.com/palamaraLab/hapne|pip install|No|Now it only support human|
+|SINGER |vcf |https://github.com/popgenmethods/SINGER|package ||It is for sampling and resampling ARGs|
 |Dadi |sfs|https://dadi.readthedocs.io/en/latest/|conda install||-|
 |Fastsimcoal2|sfs|https://cmpg.unibe.ch/software/fastsimcoal2/|conda install||-|
 |InferNo|.dat?|https://github.com/ZhendongHuang/Inference for demographic history|git clone| |-|
