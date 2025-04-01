@@ -43,8 +43,8 @@ rule run_psmc:
         cd {params.work_dir}
         parallel -j {threads} '
         base_name=$(basename {{}} .fq.gz)
-        fq2psmcfa -q0 {{}} > ${{base_namev}}.psmcfa
-        psmc -N25 -t20 -r5 -p {params.p} ${{base_namev}}.psmcfa -o ${{base_name}}.psmc
+        fq2psmcfa -q0 {{}} > ${{base_name}}.psmcfa
+        psmc -N25 -t20 -r5 -p {params.p} ${{base_name}}.psmcfa -o ${{base_name}}.psmc
         ' ::: {input}
         '''
 

@@ -8,7 +8,6 @@ rule run_gone:
         expand(f'{workDir}/{vcf_f}/GONE_results/{{file_number}}/Output_Ne_data',file_number='{file_number}')
     params:
         GONE=config["GONE_path"],  # GONE path from config
-        GONE_setting=config["GONE_setting"],
         work_dir=lambda wildcards: f'{workDir}/{vcf_f}/'
     conda: 'ne_pipe_hapNe'
     shell:

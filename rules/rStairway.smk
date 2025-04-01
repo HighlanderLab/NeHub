@@ -87,6 +87,8 @@ rule run_stairway:
         directory_name=$(dirname {input})
         base_name=$(basename {input})
         cd $directory_name
+        mkdir -p $base_name
+        cd $base_name
         java -cp {params.stairway_path} Stairbuilder {input}
         sed -i 's|stairway_plot_es/|{params.stairway_path}|g' '${{base_name}}.sh'        
         sed -i '/bash ${{base_name}}.plot.sh/d' '${{base_name}}.sh'
@@ -94,6 +96,7 @@ rule run_stairway:
 
         sed -i 's|stairway_plot_es/|{params.stairway_path}|g' ${{base_name}}.plot.sh        
         bash ${{base_name}}.plot.sh
+        mv two-epoch*/two-epoch*.final.summary results.final.summary
         '''
 
 rule summary_stairway:
