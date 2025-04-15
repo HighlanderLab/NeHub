@@ -55,7 +55,7 @@ rule prepare_relate:
         ancestral = config["ancestral_genome"]
     shell:
         '''
-        work_dir=$(dirname {input})
+        work_dir=$(dirname {input.haps})
         cd $work_dir
         if [ -f "*.gz" ]; then rm "*.gz"; fi
         # if data is not clear, you need input mask and carry on "remove non-biallelic"

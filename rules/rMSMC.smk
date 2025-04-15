@@ -34,9 +34,9 @@ rule run_MSMC:
         it=config["maxIterative"]
     shell:
         '''
-        parallel -j {threads} '
-        dir_name=$(dirname {{}})
+        dir_name=$(dirname {input[0]})
         cd $dir_name
+        echo "$dir_name"
         sampling_files=$(ls msmc_*.tab | tr "\\n" " ")
         # Check if the file "finish_flag" exists and read its lines into an array
         count=0
@@ -49,7 +49,6 @@ rule run_MSMC:
             count=$((count + 1))
             done < ./finish_flag
         fi
-        ' ::: {input}
         '''
         
 rule summary_MSMC:

@@ -95,10 +95,10 @@ vcf = cyvcf2.VCF(vcf_location)
 
 # ancestral genome
 fasta_file = args.ancestral # "reference_genome.fa"
-SeqIO.parse(fasta_file, "fasta")
+fa=SeqIO.parse(fasta_file, "fasta")
 # Read the FASTA file
 ancestral_fa={}
-for record in SeqIO.parse(fasta_file, "fasta"):
+for record in fa:
     ancestral_fa[record.id]=record
 
 # population label

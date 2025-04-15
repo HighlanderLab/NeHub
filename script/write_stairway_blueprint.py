@@ -32,6 +32,7 @@ parser = argparse.ArgumentParser(description="build blueprint for stairway plot"
 
 # Add arguments
 parser.add_argument("-i", "--input", type=str, required=True, help="Input file path")
+parser.add_argument("-stairway", "--stairway_plot_dir", type=str, required=True, help="The path of stairway_plot_dir")
 parser.add_argument("-o", "--output", type=str, required=True, help="Output file path")
 parser.add_argument("--nind", type=int, required=True, help="the number of individual")
 parser.add_argument("--length", type=int,required=True, help="total number of observed nucleic sites, including polymorphic and monomorphic")
@@ -55,20 +56,20 @@ else:
     fold="false"
 
 inputname=os.path.basename(args.input)
-inputname = inputname.strip("_SFS.obs")
+inputname = inputname.split("_SFS.obs")[0]
 
 # blueprint_config[2]= re.sub(r":(.*?)#", f": {inputname[1]} #", blueprint_config[2])
 # because of limits of snakemake, now use the same name 
 blueprint_config[2]= re.sub(r":(.*?)#", f": results #", blueprint_config[2])
-
 blueprint_config[3]= re.sub(r":(.*?)#", f": {nseq} #", blueprint_config[3])
 blueprint_config[4]= re.sub(r":(.*?)#", f": {args.length} #", blueprint_config[4])
 blueprint_config[5]= re.sub(r":(.*?)#", f": {fold} #", blueprint_config[5])
 blueprint_config[6]= re.sub(r":(.*?)#", f": {sfs} #", blueprint_config[6])
 blueprint_config[11]= re.sub(r":(.*?)#", f": {inputname} #", blueprint_config[11])
-blueprint_config[15]= re.sub(r":(.*?)#", f": {args.mutation_rate} #", blueprint_config[15])
-blueprint_config[16]= re.sub(r":(.*?)#", f": {args.generation_time} #", blueprint_config[16])
-blueprint_config[18]= re.sub(r":(.*?)#", f": {inputname} #", blueprint_config[18])
+blueprint_config[12]= re.sub(r":(.*?)#", f": {args.stairway_plot_dir} #", blueprint_config[12])
+blueprint_config[16]= re.sub(r":(.*?)#", f": {args.mutation_rate} #", blueprint_config[16])
+blueprint_config[17]= re.sub(r":(.*?)#", f": {args.generation_time} #", blueprint_config[17])
+blueprint_config[19]= re.sub(r":(.*?)#", f": {inputname} #", blueprint_config[19])
 print(inputname)
 with open(args.output,"w") as f:
     f.write("\n".join(blueprint_config))

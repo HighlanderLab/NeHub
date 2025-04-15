@@ -5,5 +5,5 @@ ancestral_genome: "/exports/cmvm/eddie/eb/groups/HighlanderLab/share/PigData/dat
 workdir: "/exports/cmvm/eddie/eb/groups/HighlanderLab/share/PigData/NeTest"
 numSampling: 5
 sampleSize: 80
-Method: ['GONE'] #'GONE','PSMC','Tskit','MSMC','SMCpp','Relate', 'Phlash','Stairway'
-mutation_rate: 4.8e-8
+Method: ['GONE','PSMC','Tskit','MSMC','SMCpp','Relate','Phlash','Stairway']
+mutation_rate: 4.8e-9

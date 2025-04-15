@@ -56,7 +56,8 @@ rule write_stairway_blueprint:
         fold=config["fold"],
         mu=config["mutation_rate"],
         ploids=config["ploids"],
-        generation_interval=config["generation_interval"]
+        generation_interval=config["generation_interval"],
+        stairway_path=config["stairway_config"]
     shell:
         '''
         script_path=$(realpath ./script/write_stairway_blueprint.py)
@@ -68,6 +69,7 @@ rule write_stairway_blueprint:
 
         python $script_path \
             --input {input.SFS} --nind $nind \
+            --stairway_plot_dir {params.stairway_path} \
             --chr $chr --length $Length \
             --mutation_rate {params.mu} --fold {params.fold} \
             --ploid {params.ploids} --generation_time {params.generation_interval} \
@@ -79,7 +81,7 @@ rule run_stairway:
     input: 
         f'{workDir}/{vcf_f}/Stairway_results/sampling{{num}}.blueprint',
     output:
-        f'{workDir}/{vcf_f}/Stairway_results/sampling{{num}}/results.final.summary',
+        f'{workDir}/{vcf_f}/Stairway_results/sampling{{num}}/sampling{{num}}.final.summary',
     params:
         stairway_path=config["stairway_config"]
     shell:
@@ -87,21 +89,13 @@ rule run_stairway:
         directory_name=$(dirname {input})
         base_name=$(basename {input})
         cd $directory_name
-        mkdir -p $base_name
-        cd $base_name
         java -cp {params.stairway_path} Stairbuilder {input}
-        sed -i 's|stairway_plot_es/|{params.stairway_path}|g' '${{base_name}}.sh'        
-        sed -i '/bash ${{base_name}}.plot.sh/d' '${{base_name}}.sh'
         bash ${{base_name}}.sh
-
-        sed -i 's|stairway_plot_es/|{params.stairway_path}|g' ${{base_name}}.plot.sh        
-        bash ${{base_name}}.plot.sh
-        mv two-epoch*/two-epoch*.final.summary results.final.summary
         '''
 
 rule summary_stairway:
     input:
-        expand(f'{workDir}/{vcf_f}/Stairway_results/sampling{{num}}/results.final.summary',num=range(config["numSampling"]))
+        expand(f'{workDir}/{vcf_f}/Stairway_results/sampling{{num}}/sampling{{num}}.final.summary',num=range(config["numSampling"]))
     output:
         f'{workDir}/{vcf_f}/Stairway_results.json'
     params:

@@ -12,6 +12,8 @@ log_dir = f"{workDir}/log_nodes"
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
+if not os.path.exists(f"{workDir}/{vcf_f}"):
+    os.makedirs(f"{workDir}/{vcf_f}")
 
 if any(method not in {"PSMC", "MSMC"} for method in config["Method"]):
     include: "rules/sampling_vcf.smk"

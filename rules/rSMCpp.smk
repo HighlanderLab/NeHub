@@ -62,6 +62,7 @@ rule run_SMCpp:
     conda: "bcftools"
     shell:
         '''
+        source /etc/profile.d/modules.sh 
         module load singularity
         parallel -j {threads} '
         # prepare the data and pop samples name

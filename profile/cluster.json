@@ -2,7 +2,7 @@
     "__default__": {
         "mem": "4G",
         "threads": "1",
-        "time": "10:00:00"
+        "time": "24:00:00"
     },
     "run_gone": {
         "mem": "4G",
@@ -19,39 +19,39 @@
         "threads": "8",
         "time": "48:00:00"
     },
-    "run_psmc:": {
+    "run_psmc": {
         "mem": "4G",
         "threads": "8",
         "time": "48:00:00"
     },
-    "run_MSMC:": {
+    "run_MSMC": {
         "mem": "16G",
-        "threads": "8",
+        "threads": "4",
         "time": "48:00:00"
     },
     "run_SMCpp":{
         "mem": "16G",
         "threads": "8",
-        "time": "48:00:00"
+        "time": "72:00:00"
     },
-    "prepare_relate:": {
+    "prepare_relate": {
         "mem": "4G",
         "threads": "8",
         "time": "24:00:00"
     },
-    "run_relate:": {
+    "run_relate": {
         "mem": "16G",
         "threads": "8",
         "time": "24:00:00"
     },
-    "run_phlash:": {
+    "run_phlash": {
         "mem": "16G",
         "threads": "8",
         "time": "24:00:00"
     },
     "run_stairway": {
-        "mem": "4G",
+        "mem": "8G",
         "threads": "1",
         "time": "24:00:00"
-    },
+    }
 }
