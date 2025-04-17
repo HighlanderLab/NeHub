@@ -27,7 +27,16 @@ rule sampling:
             awk '{{print $1}}' "$sample_file" > "$base_name".txt
             sed -i '1d' "$base_name".txt
             # Run bcftools view to extract the sample from the VCF
-            bcftools view -S "$base_name".txt {input[0]} -Oz -o $output_vcf
+            # Try running bcftools view with error check
+            if ! bcftools view -S "$base_name".txt {input[0]} -Oz -o $output_vcf; then
+                echo "bcftools failed on first attempt, retrying..."
+                sleep 20
+                # Second attempt to run bcftools view
+                if ! bcftools view -S "$base_name".txt {input[0]} -Oz -o $output_vcf; then
+                    echo "bcftools failed on second attempt, exiting."
+                    exit 3
+                fi
+            fi
             rm "$base_name".txt
         done
         '''
