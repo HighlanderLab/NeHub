@@ -18,7 +18,14 @@ rule extract_sample:
     shell:
         '''
         mkdir -p {workDir}/{vcf_f}/psmc_results/
-        tabix -f {input[0]}
+        if ! tabix -f {input[0]}; then 
+            echo "tabix failed, attempting to fix the file..."
+            gunzip -c {input[0]} > {input[0]}.unzip  # Decompress to a temporary file
+            bgzip -c {input[0]}.unzip > {input[0]}   # Recompress into the original file
+            rm {input[0]}.unzip
+            echo "Recompression done. Running tabix again..."
+            tabix -f {input[0]}
+        fi
         samples=$(awk 'NR >1 {{print $1}}' {input[1]})
         for sample in ${{samples}}; do
         cat {input[2]} |vcf-consensus -i {input[0]} -s ${{sample}}|\
@@ -40,8 +47,8 @@ rule run_psmc:
         cd {params.work_dir}
         parallel -j {threads} '
         base_name=$(basename {{}} .fq.gz)
-        fq2psmcfa -q0 {{}} > ${{base_namev}}.psmcfa
-        psmc -N25 -t20 -r5 -p {params.p} ${{base_namev}}.psmcfa -o ${{base_name}}.psmc
+        fq2psmcfa -q0 {{}} > ${{base_name}}.psmcfa
+        psmc -N25 -t20 -r5 -p {params.p} ${{base_name}}.psmcfa -o ${{base_name}}.psmc
         ' ::: {input}
         '''
 

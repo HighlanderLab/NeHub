@@ -7,7 +7,18 @@ workDir=config["workdir"]
 vcf=config["vcffile"]
 _, vcf_f = os.path.split(vcf)
 
-include: "rules/sampling_vcf.smk"
+# output .err for jobs
+log_dir = f"{workDir}/log_nodes"
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+if not os.path.exists(f"{workDir}/{vcf_f}"):
+    os.makedirs(f"{workDir}/{vcf_f}")
+
+if any(method not in {"PSMC", "MSMC"} for method in config["Method"]):
+    include: "rules/sampling_vcf.smk"
+
+
 for method in config["Method"]:
     include: f"rules/r{method}.smk"
 
