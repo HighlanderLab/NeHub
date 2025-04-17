@@ -19,7 +19,7 @@ A comprehensive pipeline for inferring population size trajectories using multip
 |pHlash | vcf.gz| https://github.com/jthlab/phlash|pip install|No|Yes|
 |tskit(tsinfer and tsdate)|ts|https://tskit.dev/|conda install|No|Yes|
 |Relate (ARG)| haps and sample|https://myersgroup.github.io/relate/|package|No|Yes|
-|Stairway Plot v2|SFS|https://github.com/xiaoming-liu/stairway-plot-v2|No|Yes|
+|Stairway Plot v2|SFS|https://github.com/xiaoming-liu/stairway-plot-v2|package|No|Yes|
 |HapNe-LD/HapNe-IBD |vcf|https://github.com/palamaraLab/hapne|pip install|No|Now it only support human|
 |SINGER |vcf |https://github.com/popgenmethods/SINGER|package ||It is for sampling and resampling ARGs|
 |Dadi |sfs|https://dadi.readthedocs.io/en/latest/|conda install||-|
