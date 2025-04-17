@@ -203,7 +203,6 @@ Solution:
 ```
 qlogin use 16G memory.
 ```
-
 #### phlash
 phlash requires a GPU to run fast. THere are GPUs available on Eddie, but we probably have to play around a little to figure out how to use these. Hannes has set up two versions.
 
@@ -256,5 +255,9 @@ Dowload package from https://myersgroup.github.io/relate/
 #### fastsimcoal2
 `conda create -n ne_pipe_fastsimcoal2 -c bioconda fastsimcoal2`
 
+### hapNe
 
-
+Have set up following the suggestions, making a conda environment using the supplied YML file.
+```
+conda activate ne_pipe_hapNe
+```
