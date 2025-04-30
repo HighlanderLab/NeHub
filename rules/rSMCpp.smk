@@ -60,6 +60,7 @@ rule run_SMCpp:
         mu=config["mutation_rate"],
         workDir=config["workdir"]
     conda: "bcftools"
+    retries: 3
     shell:
         '''
         source /etc/profile.d/modules.sh 

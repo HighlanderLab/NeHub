@@ -1,8 +1,34 @@
 configfile: "./config/Stairway_config.yaml"
 
-rule generate_sfs:
+rule polarize:
     input:
         vcf = f'{workDir}/{vcf_f}/sampling{{num}}.vcf.gz',
+    output:
+        f'{workDir}/{vcf_f}/Stairway_results/sampling{{num}}_polarized.vcf.gz'
+    conda:
+        "HLab_tsinfer"
+    params:
+        ancestral = config["ancestral_genome"]
+    shell:
+        '''
+        python ./script/polarize.py -v {input.vcf} -a {params.ancestral} -o {output}
+        '''
+
+rule filter_missing:
+    input:
+        vcf = f'{workDir}/{vcf_f}/Stairway_results/sampling{{num}}_polarized.vcf.gz',
+    output:
+        f'{workDir}/{vcf_f}/Stairway_results/sampling{{num}}_polarized_filter.vcf.gz'
+    conda:
+        "bcftools"
+    shell:
+        '''
+        bcftools view -e 'FILTER="MISSING"' {input.vcf} -Oz -o {output}
+        '''
+
+rule generate_sfs:
+    input:
+        vcf = f'{workDir}/{vcf_f}/Stairway_results/sampling{{num}}_polarized_filter.vcf.gz',
         popfile = f'{workDir}/{vcf_f}/sampling{{num}}.popLabel',
     output:
         f'{workDir}/{vcf_f}/Stairway_results/sampling{{num}}_SFS.obs'
@@ -11,7 +37,7 @@ rule generate_sfs:
     params:
         easySFS=config["easysfs_path"],
         ploid=config["ploids"],
-        fold=config["fold"]
+        fold=config["fold"],
     shell:
         '''
         directory_name=$(dirname {input.popfile})
@@ -23,7 +49,6 @@ rule generate_sfs:
         awk 'NR > 1' {input.popfile}  > ${{base_name}}.poplabels
         min_count=$(cut -d $'\t' -f2 ${{base_name}}.poplabels | sort | uniq -c | sort -n | head -n 1 | awk '{{print $1}}')
         
-
         if [ {params.fold} -eq 1 ]; then
             project=$((min_count))
             {params.easySFS} -i {input.vcf} -p ${{base_name}}.poplabels -a --proj $project -o ${{base_name}}_SFS
@@ -33,7 +58,7 @@ rule generate_sfs:
                 cp "$file" "$new_file"
             done
         else
-            project=$({params.ploid} * min_count)
+            project=$(({params.ploid} * min_count))
             {params.easySFS} -i {input.vcf} -p ${{base_name}}.poplabels -a --unfold --proj $project -o ${{base_name}}_SFS
             for file in ${{base_name}}_SFS/fastsimcoal2/*_DAFpop0.obs; do
                 base=$(basename "$file" _DAFpop0.obs)

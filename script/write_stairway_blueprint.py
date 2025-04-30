@@ -52,7 +52,7 @@ fold="true"
 if args.fold == 1:
     sfs="\t".join(li[1:args.nind+2])
 else:
-    sfs="\t".join(li[1:])
+    sfs="\t".join(li[1:-1])
     fold="false"
 
 inputname=os.path.basename(args.input)

@@ -8,7 +8,8 @@ rule run_gone:
         expand(f'{workDir}/{vcf_f}/GONE_results/{{file_number}}/Output_Ne_data',file_number='{file_number}')
     params:
         GONE=config["GONE_path"],  # GONE path from config
-        work_dir=lambda wildcards: f'{workDir}/{vcf_f}/'
+        work_dir=lambda wildcards: f'{workDir}/{vcf_f}/',
+        phased=config["GONE_phases"],
     conda: 'ne_pipe_hapNe'
     shell:
         '''
@@ -19,9 +20,14 @@ rule run_gone:
         base_name=$(basename {input} .vcf.gz)
         mkdir -p "$base_name"
         cd "$base_name"
-        plink --vcf {input} --recode --out data
         work_dir=$(pwd)
-        python $script_path -o $work_dir/INPUT_PARAMETERS_FILE
+        plink --vcf {input} --recode --out data
+        if [ {params.phased} -eq 1 ]; then
+            python $script_path -o $work_dir/INPUT_PARAMETERS_FILE -p 2
+        else
+            python $script_path -o $work_dir/INPUT_PARAMETERS_FILE -p 1
+        fi
+        
         # Create symbolic links
         ln -sf {params.GONE}Linux/script_GONE.sh ./script_GONE.sh
         ln -sf {params.GONE}Linux/PROGRAMMES/ ./

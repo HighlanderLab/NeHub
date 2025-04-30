@@ -28,8 +28,10 @@ parser = argparse.ArgumentParser(description="build input parameters file for GO
 
 # Add arguments
 parser.add_argument("-o", "--output", type=str, required=True, help="Output file path")
+parser.add_argument("-p", "--phase", type=str, required=True, help="whether the phase is known or not, 0: pseudohaploids, 1: known phase, 2: unknown phase")
 # Parse arguments
 args = parser.parse_args()
+input_parameters_file[4]= re.sub(r"=(.*?)###", f"={args.phase} ###", input_parameters_file[4])
 # we don't change any value, because this setting set is suitable for most of analysis. 
 # if you are interested into change value we give the template to modify. 
 

@@ -1,7 +1,7 @@
 easysfs_path: "/home/s2587593/PigData/git_soft/easySFS/easySFS.py"
 stairway_config: "/home/s2587593/PigData/git_soft/stairway_plot_v2.1.2/stairway_plot_es/"
 # setting for Stairway 
-fold: 1 # default 1 is fold, while 0 is unfold
+fold: 0 # default 1 is fold, while 0 is unfold
 ploids: 2 # please enter the number of ploids, for example, human is diploids Enter 2.
 generation_interval: 5 # summary results use "generation" as units, so this value didn't affect final results, but if you are insterested the plot, it must be setting
 
