@@ -51,10 +51,10 @@ rule prepare_SMCpp:
 
 rule run_SMCpp:
     input:
-        f'{workDir}/{vcf_f}/{{sampling}}.vcf.gz',
-        f'{workDir}/{vcf_f}/SMCpp_results/{{sampling}}/params_pop.txt'
+        vcf=f'{workDir}/{vcf_f}/{{sampling}}.vcf.gz',
+        param=f'{workDir}/{vcf_f}/SMCpp_results/{{sampling}}/params_pop.txt'
     output:
-        f'{workDir}/{vcf_f}/SMCpp_results/{{sampling}}/results.csv'
+        f'{workDir}/{vcf_f}/SMCpp_results/{{sampling}}/pop1/model.final.json'
     params:
         contig = config["contig"],
         mu=config["mutation_rate"],
@@ -65,42 +65,39 @@ rule run_SMCpp:
         '''
         source /etc/profile.d/modules.sh 
         module load singularity
-        parallel -j {threads} '
         # prepare the data and pop samples name
-        base_name=$(basename {{}} .vcf.gz)
-        directory_name=$(dirname {{}})
+        base_name=$(basename {input.vcf} .vcf.gz)
+        directory_name=$(dirname {input.vcf})
         cd $directory_name/SMCpp_results/$base_name
-        tabix -f {{}}
+        bcftools index -c -f {input.vcf}
         # run SMCpp
         line_count=$(wc -l < params_pop.txt)
         mapfile -t lines < params_pop.txt
-        mkdir data_{params.contig}
-        if [ "$line_count" -eq 1 ]; then
-        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest vcf2smc {{}} data_{params.contig}/pop1.smc.gz {params.contig} ${{lines[0]}}
-        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest estimate -o pop1_{params.contig}/ {params.mu} data_{params.contig}/pop1.smc.gz
-        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest plot -c results pop1_{params.contig}/model.final.json 
-
-        echo "successfully finish" > finined_flag
-        else
-
-        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest vcf2smc {{}} data_{params.contig}/pop1.smc.gz {params.contig} ${{lines[0]}}
-        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest estimate -o pop1_{params.contig}/ {params.mu} data_{params.contig}/pop1.smc.gz
-        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest vcf2smc {{}} data_{params.contig}/pop2.smc.gz {params.contig} ${{lines[1]}}
-        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest estimate -o pop2_{params.contig}/ {params.mu} data_{params.contig}/pop2.smc.gz
-
-        first_row=$(IFS=" "; echo "${{lines[*]}}")
-        second_row=$(IFS=" and "; echo "${{lines[*]}}" | tac -s$'\\n')
-        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest vcf2smc {{}} data_{params.contig}/pop12.smc.gz {params.contig} $first_row
-        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest vcf2smc {{}} data_{params.contig}/pop21.smc.gz {params.contig} $second_row
-        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest split -o split_{params.contig}/ pop1_{params.contig}/model.final.json pop2_{params.contig}/model.final.json data_{params.contig}/*.smc.gz
-        
-        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest plot -c results ./*/model.final.json 
-
-        fi
-        ' ::: {input[0]}
+        mkdir -p data_{params.contig}
+        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest vcf2smc {input.vcf} data_{params.contig}/pop1.smc.gz {params.contig} ${{lines[0]}}
+        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest estimate -v -o pop1/ {params.mu} data_{params.contig}/pop1.smc.gz
         '''
 
-        
+
+rule run_SMCpp_plot:
+    input:
+        f'{workDir}/{vcf_f}/SMCpp_results/{{sampling}}/pop1/model.final.json'
+    output:
+        f'{workDir}/{vcf_f}/SMCpp_results/{{sampling}}/results.csv'
+    params:
+        contig = config["contig"],
+        workDir=config["workdir"]
+    conda: "bcftools"
+    retries: 3
+    shell:
+        '''
+        directory_name=$(dirname {input[0]})
+        cd $directory_name
+        cd ../
+        source /etc/profile.d/modules.sh 
+        module load singularity
+        singularity run --bind {params.workDir} docker://terhorst/smcpp:latest plot -c results {input[0]}
+        '''
         
         
 rule summary_SMCpp:

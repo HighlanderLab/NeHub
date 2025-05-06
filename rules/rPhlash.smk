@@ -24,7 +24,7 @@ rule run_phlash:
     params:
         mu=config["mutation_rate"]
     conda: 
-        'ne_pipe_phlash_gpu_rocky'
+        'ne_pipe_phlash_nogpu_rocky'
     shell:
         '''
         mkdir -p {output}
@@ -37,7 +37,7 @@ rule summary_Phlash:
     output:
         f'{workDir}/{vcf_f}/Phlash_results.json'
     conda: 
-        'ne_pipe_phlash_gpu_rocky'
+        'ne_pipe_phlash_nogpu_rocky'
     shell:
         '''
         python "./script/phlash_summary.py"  --input {input} --out {output}

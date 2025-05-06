@@ -18,9 +18,6 @@ def run_phlash(input_vcf_phalsh, input_pop_labels, output_dir, mutation_rate):
         None
     """
 
-    # Change to the working directory
-    os.chdir(output_dir)
-
     # Open the VCF file
     vcf = pysam.VariantFile(input_vcf_phalsh)
 
@@ -48,6 +45,8 @@ def run_phlash(input_vcf_phalsh, input_pop_labels, output_dir, mutation_rate):
         results = phlash.fit(chroms_1kg, mutation_rate=mutation_rate)
         # Save results to a pickle file
         output_file = os.path.join(output_dir, f"{pop}.pkl")
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         with open(output_file, "wb") as f:
             pickle.dump(results, f)
 
@@ -60,7 +59,7 @@ if __name__ == "__main__":
 
 # Add arguments
     parser.add_argument('--vcf', type=str, required=True, help='Path to the VCF file')
-    parser.add_argument('--poplabels', type=str, required=True, help='Path to the ancestral genome fa file')
+    parser.add_argument('--poplabels', type=str, required=True, help='Path to the sample list file')
     parser.add_argument('--mutation_rate', type=float, required=True,help='mutation rate')
     parser.add_argument('--out',type=str, required=True, help='output folder')
     # Parse arguments

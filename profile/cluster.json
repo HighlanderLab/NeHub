@@ -47,7 +47,7 @@
     "run_phlash": {
         "mem": "16G",
         "threads": "8",
-        "time": "24:00:00"
+        "time": "72:00:00"
     },
     "run_stairway": {
         "mem": "8G",
