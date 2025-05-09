@@ -6,13 +6,15 @@ jobname: "{rule}.{jobid}"
 jobs: 8
 # drmaa: " -P roslin_HighlanderLab -o {log_dir}/{rule}.{jobid}.out -e {log_dir}/{rule}.{jobid}.err -l h_vmem={cluster.mem} -l h_rt={cluster.time} -pe sharedmem {cluster.threads} -R y" 
 # -l rl9=false this option is used to avoid rocky node, but if use it there is no "GLIBC_2.27"
-cluster: "qsub -P roslin_HighlanderLab \
-         -o {log_dir}/{rule}.{jobid}.out \
-         -e {log_dir}/{rule}.{jobid}.err \
-         -l h_vmem={cluster.mem} \
-         -l h_rt={cluster.time} \
-         -pe sharedmem {cluster.threads} \
-         -R y"
+# cluster: "qsub -P roslin_HighlanderLab \
+#          -o {log_dir}/{rule}.{jobid}.out \
+#          -e {log_dir}/{rule}.{jobid}.err \
+#          -l h_vmem={cluster.mem} \
+#          -l h_rt={cluster.time} \
+#          -pe sharedmem {cluster.threads} \
+#          -q {cluster.queue} \
+#          -l gpu={cluster.gpu} \
+#          -R y"
 rerun-incomplete: true
 rerun-triggers: [mtime, input]
 # cores: 8 # how many jobs you want to submit to your cluster queue

@@ -2,7 +2,9 @@
     "__default__": {
         "mem": "4G",
         "threads": "1",
-        "time": "24:00:00"
+        "time": "24:00:00",
+        "queue": "eddie",
+        "gpu": "FALSE"
     },
     "run_gone": {
         "mem": "4G",
@@ -45,6 +47,12 @@
         "time": "24:00:00"
     },
     "run_phlash": {
+        "queue": "gpu",
+        "gpu": "1",
+        "mem": "16G",
+        "time": "12:00:00"
+    },
+    "run_phlash_nogpu": {
         "mem": "16G",
         "threads": "8",
         "time": "72:00:00"

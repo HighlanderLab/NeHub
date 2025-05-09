@@ -24,10 +24,12 @@ rule run_phlash:
     params:
         mu=config["mutation_rate"]
     conda: 
-        'ne_pipe_phlash_nogpu_rocky'
+        'ne_pipe_phlash_gpu_rocky'
     shell:
         '''
         mkdir -p {output}
+        source /etc/profile.d/modules.sh 
+        module load cuda
         python "./script/phlash_run.py"  --vcf {input.vcf_phalsh} --poplabels {input.popLabels} --out {output}  --mutation_rate {params.mu}
         '''
 
