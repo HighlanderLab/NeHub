@@ -1,5 +1,6 @@
-# ne-traj-pipe
-A comprehensive pipeline for inferring population size trajectories using multiple demographic inference tools.
+# NeHub
+Pipeline to infer effective population size trajectories using a variety of tools
+
 ## Table of Contents
 - [Available Tools](#available-tools)
 - [Configuration](#configuration)
