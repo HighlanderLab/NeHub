@@ -1,5 +1,17 @@
 # NeHub
 
+[![CI_conda](https://github.com/HighlanderLab/NeHub/actions/workflows/ci_conda.yml/badge.svg?branch=Ne-nextflow)](https://github.com/HighlanderLab/NeHub/actions/workflows/ci_conda.yml)
+[![CI_docker](https://github.com/HighlanderLab/NeHub/actions/workflows/ci_docker.yml/badge.svg?branch=Ne-nextflow)](https://github.com/HighlanderLab/NeHub/actions/workflows/ci_docker.yml)
+
+[![GONE](https://img.shields.io/badge/method-GONE-1f77b4)](https://github.com/esrud/GONE)
+[![PSMC](https://img.shields.io/badge/method-PSMC-1f77b4)](https://github.com/lh3/psmc)
+[![MSMC](https://img.shields.io/badge/method-MSMC-1f77b4)](https://github.com/stschiff/msmc2)
+[![SMC++](https://img.shields.io/badge/method-SMC%2B%2B-1f77b4)](https://github.com/popgenmethods/smcpp)
+[![PHLASH](https://img.shields.io/badge/method-PHLASH-1f77b4)](https://github.com/jthlab/phlash)
+[![tsinfer/tsdate/tskit](https://img.shields.io/badge/method-tsinfer%2Ftsdate%2Ftskit-1f77b4)](https://tskit.dev/)
+[![Relate](https://img.shields.io/badge/method-Relate-1f77b4)](https://myersgroup.github.io/relate/)
+[![Stairway Plot](https://img.shields.io/badge/method-Stairway%20Plot-1f77b4)](https://github.com/xiaoming-liu/stairway-plot-v2)
+
 A Nextflow pipeline for estimating effective population size (Ne) trajectories from whole-genome sequence data, supporting multiple demographic inference tools.
 
 > **Note:** The NeHub Docker image is currently **private**. It will be made public in a future release. If you wish to use Docker or Singularity, you can either build the image yourself (see [Running with Docker / Singularity](#running-with-docker--singularity)) or contact the author for access to pull the image directly.

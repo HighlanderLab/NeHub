@@ -1,4 +1,4 @@
-name: docker_based
+name: CI_docker
 
 on:
   push:
