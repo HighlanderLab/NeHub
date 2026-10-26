@@ -45,6 +45,19 @@ export NXF_OPTS='-Xss256k -Xmx512m'
 ```
 
 ---
+## Requirements
+
+- Nextflow >= 24.10.2
+- Java >= 17
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/AprilYUZhang/NeTrajHub.git
+cd NeTrajHub
+```
+
+---
 
 ## Configuration
 
@@ -223,6 +236,9 @@ nextflow run main.nf -profile eddie_singularity,large -resume
 ```
 
 ---
+# Build environment 
+
+Here are two options: one is Docker based on mirrors, and the other is installation on the local machine.
 
 ## Running with Docker / Singularity
 
@@ -299,18 +315,25 @@ singularity pull \
 
 > **Recommendation:** If you are not familiar with Docker, use the Conda-based installation below. Each tool is installed into a separate Conda environment to avoid dependency conflicts.
 
-### Requirements
+Users can install all tools with `install/install_all.sh`, install only selected tools with the same script, or follow the manual commands in the sections below.
 
-- Nextflow >= 24.10.2
-- Conda (recommended: [Miniconda](https://docs.conda.io/en/latest/miniconda.html))
-- Java >= 17
+The script runs the similar install commands as the CI workflow (`.github/workflows/ci.yml`), which is tested on every pull request.
 
-### Clone the Repository
+#### Install everything
 
 ```bash
-git clone https://github.com/AprilYUZhang/NeTrajHub.git
-cd NeTrajHub
+bash install/install_all.sh
 ```
+
+#### Install selected tools only
+
+```bash
+bash install/install_all.sh smcpp relate        # only SMC++ and Relate
+bash install/install_all.sh conda               # all conda environments
+bash install/install_all.sh standalone          # GONE, Relate, Stairway Plot 2, easySFS
+```
+### requirement
+- Conda (recommended: [Miniconda](https://docs.conda.io/en/latest/miniconda.html))
 
 ### Conda Environments
 | Conda env | YAML file | Main contents | Used by process label | Notes |
