@@ -1,0 +1,155 @@
+# ============================================================================
+# Ne-nextflow — single image containing all non-containerised tools
+#
+# Tools installed here (source / binary download):
+#   GONE        – git clone (pre-compiled Linux binaries)
+#   Relate      – pre-compiled tarball from myersgroup.github.io
+#   Stairway Plot v2 – Java jar (git clone from GitHub release)
+#   easySFS     – Python script (git clone)
+#
+# Tools provided by conda environments (built from conf/envs/*.yml):
+#   basic_Ne                  – PSMC, MSMC2, plink, bcftools, python, pandas …
+#   bcftools                  – bcftools 1.9 + vcftools
+#   ts_tools                  – tsinfer, tsdate, tskit
+#   ne_pipe_phlash_nogpu_rocky – Phlash CPU  (phlash==1.0.3, JAX CPU)
+#
+#   smcpp                     – smc++ (GitHub source build)
+#                               label: singularity_bcftools
+# ============================================================================
+ARG BUILDPLATFORM=linux/amd64
+FROM --platform=${BUILDPLATFORM} continuumio/miniconda3:24.1.2-0
+
+LABEL maintainer="YuZhang"
+LABEL description="NeHub-nextflow pipeline environment"
+
+# ── Version / URL build args (override with --build-arg if newer releases exist) ──
+ARG NXF_VERSION=24.04.4
+
+# ── Install system packages ───────────────────────────────────────────────────
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends \
+        default-jre-headless \
+        wget \
+        git \
+        unzip \
+        procps \
+        bc \
+        cmake \
+        build-essential \
+        zlib1g-dev \
+        libbz2-dev \
+        liblzma-dev \
+        libcurl4-openssl-dev \
+        python3-dev \
+        libgmp-dev \
+        libmpfr-dev \
+        libgsl0-dev \
+        gnuplot-nox \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+# ── Conda environments ────────────────────────────────────────────────────────
+# smcpp: dedicated env built from GitHub source.
+# System deps (libgsl0-dev, libgmp-dev, libmpfr-dev) are installed above.
+RUN conda create -n smcpp python=3.9 -y && \
+    conda install -n smcpp -y \
+        -c conda-forge \
+        -c bioconda \
+        "numpy>=1.20,<1.24" \
+        setuptools \
+        setuptools-scm \
+        "scipy>=1.8" \
+        "pandas>=1.4" \
+        "matplotlib>=3" \
+        "pysam>=0.18" \
+        "scikit-learn>=1" \
+        tqdm \
+        appdirs \
+        seaborn \
+        cython && \
+    git clone --depth 1 https://github.com/popgenmethods/smcpp.git /tmp/smcpp_src && \
+    cd /tmp/smcpp_src && \
+    conda run -n smcpp python setup.py install && \
+    rm -rf /tmp/smcpp_src && \
+    conda clean -afy
+
+RUN echo "=== Checking tools ===" && \
+    conda run -n smcpp smc++ -h   && echo "smc++ OK"
+
+COPY ../conf/envs/basic_tools.yml   /tmp/basic_tools.yml
+COPY ../conf/envs/bcftools.yml      /tmp/bcftools.yml
+COPY ../conf/envs/ts_tools.yml      /tmp/ts_tools.yml
+
+# --name overrides the prefix: field in each yml (which points to Eddie-specific paths)
+RUN conda env create --name basic_Ne --file /tmp/basic_tools.yml && conda clean -afy
+RUN conda env create --name bcftools --file /tmp/bcftools.yml    && conda clean -afy
+RUN conda env create --name ts_tools --file /tmp/ts_tools.yml    && conda clean -afy
+
+# CPU env also share the same environment 
+RUN conda create -n phlash python=3.10 -y && \
+    conda run -n phlash conda install -c bioconda dinopy -y && \
+    conda install -n phlash -y -c conda-forge jaxlib jax && \
+    conda run -n phlash pip install phlash --no-build-isolation && \
+    conda clean -afy
+
+# ── GONE (pre-compiled Linux binaries) ───────────────────────────────────────
+# Clones the repository; binaries live in GONE/Linux/PROGRAMMES/
+RUN git clone --depth 1 https://github.com/esrud/GONE.git /tmp/GONE_src && \
+    mkdir -p /opt/GONE/Linux/PROGRAMMES/ && cp /tmp/GONE_src/Linux/PROGRAMMES/* /opt/GONE/Linux/PROGRAMMES/ && \
+    chmod -R +x /opt/GONE/Linux/PROGRAMMES/ && \
+    rm -rf /tmp/GONE_src
+
+# ── Relate (pre-compiled tarball) ────────────────────────────────────────────
+# Executables end up in /opt/relate/bin/ and /opt/relate/scripts/
+RUN git clone --depth 1 https://github.com/MyersGroup/relate.git /tmp/relate_src && \
+    cd /tmp/relate_src && \
+    mkdir -p build && cd build && \
+    cmake .. && make -j$(nproc) && \
+    mkdir -p /opt/relate/bin && \
+    cp /tmp/relate_src/bin/* /opt/relate/bin/ && \
+    rm -rf /tmp/relate_src
+
+# ── Stairway Plot v2 (Java jar) ───────────────────────────────────────────────
+# The jar and helper scripts live in /opt/stairway_plot_es/
+
+RUN git clone --depth 1 https://github.com/xiaoming-liu/stairway-plot-v2.git \
+        /tmp/stairway_src && \
+    cd /tmp/stairway_src && \
+    unzip -o -q stairway_plot_v2.1.3.zip -d stairway_out && \
+    mv stairway_out/stairway_plot_v2.1.3/stairway_plot_es /opt/stairway_plot_es && \
+    rm -rf /tmp/stairway_src
+
+# Verify the jar is present
+RUN ls /opt/stairway_plot_es/*.jar
+
+# ── easySFS (Python script + dependencies) ───────────────────────────────────
+# Run using the basic_Ne conda environment; clone into /opt/easySFS
+RUN git clone --depth 1 https://github.com/isaacovercast/easySFS.git /opt/easySFS && \
+    chmod +x /opt/easySFS/easySFS.py
+
+# ── Pipeline scripts ───────────────────────────────────────────────────────────
+WORKDIR /pipeline
+
+# ── Convenience env vars ───────────────────────────────────────────────────────
+# These match the paths params.config expects for each tool.
+# Users can override them via nextflow params or --env at docker run time.
+ENV GONE_PATH=/opt/GONE
+ENV RELATE_PATH=/opt/relate
+ENV STAIRWAY_PATH=/opt/stairway_plot_es
+ENV EASYSFS_PATH=/opt/easySFS/easySFS.py
+ENV PATH="/opt/conda/bin:/opt/relate/bin:/usr/local/bin:${PATH}"
+
+# ── Verify all tools ───────────────────────────────────────────────────────────
+RUN echo "=== Checking tools ===" && \
+    conda run -n basic_Ne which msmc2_Linux   && echo "msmc2 OK"     && \
+    conda run -n basic_Ne which psmc   && echo "psmc OK"     && \
+    conda run -n smcpp smc++ -h   && echo "smc++ OK"    && \
+    conda run -n phlash python -c "import phlash; print('phlash OK')" && \
+    conda run -n ts_tools python -c "import tsinfer; import tsdate; import tskit; import tszip; print('tsinfer OK')" && \
+    ls /opt/relate/                     && echo "Relate OK"    && \
+    ls /opt/GONE/Linux/PROGRAMMES/      && echo "GONE OK"      && \
+    ls /opt/stairway_plot_es/           && echo "Stairway OK"  && \
+    ls /opt/easySFS/easySFS.py          && echo "easySFS OK"   && \
+    echo "=== All tools OK ==="
+
+CMD ["/bin/bash"]
+

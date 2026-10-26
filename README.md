@@ -1,5 +1,14 @@
 # NeHub
-Pipeline to infer effective population size trajectories using a variety of tools
+
+A Nextflow pipeline for estimating effective population size (Ne) trajectories from whole-genome sequence data, supporting multiple demographic inference tools.
+
+> **Note:** The NeHub Docker image is currently **private**. It will be made public in a future release. If you wish to use Docker or Singularity, you can either build the image yourself (see [Running with Docker / Singularity](#running-with-docker--singularity)) or contact the author for access to pull the image directly.
+
+> **Chromosome naming:** The pipeline currently only recognises chromosomes in the format `chr1`, `chr2`, ..., `chrX`. Chromosomes named `1`, `2`, etc. (without the `chr` prefix) will not be processed correctly. Please ensure your VCF files and reference genome use the `chr` prefix convention.
+
+> **Docker vs Conda:** If you are not familiar with Docker or Singularity, we recommend using the **Conda-based installation** described in the [Installation](#installation) section. `PSMC` and `MSMC2` are included in `basic_tools.yml`. `SMC++`, `pHlash`, and `tsinfer/tsdate` each require a separate Conda environment as detailed below. `Stairway Plot 2`, `Relate`, and `GONE` are installed as standalone packages, with their installation paths specified in the pipeline configuration.
+
+---
 
 ## Table of Contents
 - [Available Tools](#available-tools)
@@ -7,258 +16,408 @@ Pipeline to infer effective population size trajectories using a variety of tool
 - [Data Processing](#data-processing)
 - [Usage](#usage)
 - [Cluster Usage](#cluster-usage)
+- [Running with Docker / Singularity](#running-with-docker--singularity)
 - [Installation](#installation)
+- [VCF Header Fix](#vcf-header-fix)
+- [Important Notes](#important-notes)
 
+---
 
 ## Available Tools
-|Tools| input| link| install approach|if built-in boostrap for chunk of chromosome|Avaliable now|
-|-----|-----|---|---|----|----|
-|GONE | plink file .ped .bim|https://github.com/esrud/GONE|git clone|yes, but sampling variants independly|Yes|
-|PSMC|fastq |https://github.com/lh3/psmc|conda install|yes|Yes|
-|MSMC2|vcf |https://github.com/stschiff/msmc2; https://github.com/stschiff/msmc-tools/ |conda install, git clone|yes|Yes|
-|SMC++ | vcf.gz|https://github.com/popgenmethods/smcpp|conda install|No|Yes|
-|pHlash | vcf.gz| https://github.com/jthlab/phlash|pip install|No|Yes|
-|tskit(tsinfer and tsdate)|ts|https://tskit.dev/|conda install|No|Yes|
-|Relate (ARG)| haps and sample|https://myersgroup.github.io/relate/|package|No|Yes|
-|Stairway Plot v2|SFS|https://github.com/xiaoming-liu/stairway-plot-v2|package|No|Yes|
-|HapNe-LD/HapNe-IBD |vcf|https://github.com/palamaraLab/hapne|pip install|No|Now it only support human|
-|SINGER |vcf |https://github.com/popgenmethods/SINGER|package ||It is for sampling and resampling ARGs|
-|Dadi |sfs|https://dadi.readthedocs.io/en/latest/|conda install||-|
-|Fastsimcoal2|sfs|https://cmpg.unibe.ch/software/fastsimcoal2/|conda install||-|
-|InferNo|.dat?|https://github.com/ZhendongHuang/Inference for demographic history|git clone| |-|
+
+| Tools | Input | Link | Install Approach | Available Now |
+|---|---|---|---|---|---|
+| GONE | plink file (.ped, .bim) | https://github.com/esrud/GONE | git clone | Yes |
+| PSMC | fastq | https://github.com/lh3/psmc | conda install | Yes |
+| MSMC2 | vcf | https://github.com/stschiff/msmc2 | conda install | Yes |
+| SMC++ | vcf.gz | https://github.com/popgenmethods/smcpp | conda install |Yes |
+| pHlash | vcf.gz | https://github.com/jthlab/phlash | pip install | Yes |
+| tsinfer and tsdate | ts | https://tskit.dev/ | conda install | Yes |
+| Relate | haps and sample | https://myersgroup.github.io/relate/ | package | Yes |
+| Stairway Plot v2 | SFS | https://github.com/xiaoming-liu/stairway-plot-v2 | package | Yes |
 
 ### Memory Requirements
-- SMC++ requires at least 16GB memory
+- SMC++ requires at least 16 GB memory if use `singularity run docker://terhorst/smcpp:latest`
 - pHlash benefits from GPU acceleration
+- Java memory settings:
+```bash
+export NXF_OPTS='-Xss256k -Xmx512m'
+```
+
+---
 
 ## Configuration
 
-<a name="global-parameters"></a>
-## Global Parameters ([`global_config.yaml`](config/global_config.yaml))
+The pipeline uses configuration files located in the `conf/` directory, including global parameters and tool-specific configurations.
 
-- `vcffile`: Path to the input prefix of VCF file (must end with .vcf.gz, for example "test". don't suggest 
-  including "." in file name, prefix file name of popLabel(.popLabel) must be same with vcffile)
-- `ref_genome`: Path to the reference genome FASTA file
-- `ancestral_genome`: Path to the ancestral genome FASTA file
-- `workdir`: Working directory for output files
-- `numSampling`: Number of sampling iterations (set to 1 if no sampling needed)
-- `sampleSize`: Number of samples to use in each iteration
-- `Method`: List of methods to run (e.g., ['GONE', 'PSMC', 'Tskit', 'MSMC', 'SMCpp', 'Relate', 'Phlash', 'Stairway'])
-- `mutation_rate`: Mutation rate per site per generation (default: 4.8e-9)
+### Parameter Input Methods
 
-### Global Parameters
-The pipeline uses YAML configuration files located in the `config/` directory. The main configuration file is [`global_config.yaml`](config/global_config.yaml):
-
-```yaml
-vcffile: "/path/to/your/vcf/prefix"  # Must match popLabel prefix
-ref_genome: "/path/to/reference.fa"
-ancestral_genome: "/path/to/ancestral.fa"
-workdir: "/path/to/output/directory"
-numSampling: 5
-sampleSize: 80
-Method: ['GONE', 'PSMC', 'Stairway']  # Available methods
-mutation_rate: 4.8e-9
+1. **Command Line Parameters**: Direct input through the command line
+```bash
+nextflow -log ${workdir}/logs/nextflow_${task}_${replicate}.log run ${workdir}/main.nf \
+    --chromosomes 1  \
+    --population_file popLabel.txt \
+    --GONE.installation_path "/path/to/GONE/" \
 ```
 
-### Tool-Specific Configurations
+2. **JSON Configuration File**: Partial parameter input through a JSON file
 
-### Stairway Plot (`Stairway_config.yaml`)
-- `easysfs_path`: Path to the easySFS.py executable
-  - Used for converting VCF to SFS format
-  - Must be the full path to the easySFS script
-- `stairway_config`: Path to the Stairway Plot JAR file
-  - Contains the Stairway Plot executable and resources
-- `fold`: SFS folding option
-  - 1: Use folded SFS (default)
-  - 0: Use unfolded SFS
-  - Folding is recommended when ancestral states are uncertain
-- `ploids`: Ploidy level of the organism
-  - 2: Diploid (default for most organisms)
-  - Other values for polyploid species
-- `generation_interval`: Generation time in years
-  - Used for converting results to calendar years
-  - Does not affect the actual analysis (because the final results are along generation), only the interpretation of results
-  - Default: 5 years
+Detail see in `./conf/params.config`. 
 
+```json
+{
+    "input_dir": "/test/",
+    "method": "GONE,PSMC,tskit,SMCpp,Relate,Phlash,stairway,MSMC",
+    "chromosomes": [1]
+}
+```
 
-#### MSMC (`MSMC_config.yaml`)
-- `num_sampling_msmc`: 20
-- `sample_size_msmc`: 4
-- `timeSegmentPattern`: "1*2+25*1+1*2+1*3"
-- `rhoOverMu`: 0.22
-- `maxIterative`: 4
+> **Note:** If use `singularity`, the reference genome, ancestral genome, and container image paths must all be **absolute paths**. Relative paths (e.g. `./tests/test_data/test.fa`) will not work inside Singularity containers as the working directory differs from the host.
 
-#### PSMC (`PSMC_config.yaml`)
-- `psmc_setting`: "4+50*1+4+6"
-- `bin_size`: 100
-
-#### GONE (`GONE_config.yaml`)
-- `GONE_path`: Path to GONE installation
-- `GONE_setting`: Path to parameters file
-
-#### Relate (`Relate_config.yaml`)
-- `Relate_path`: Path to Relate installation
-- `N`: 20000
-
-#### SMC++ (`SMCpp_config.yaml`)
-- `contig`: chr1
-
-#### tskit (`tskit_config.yaml`)
-- `timepoint`: Time point file
-
-## Data Processing
-For real data, mask used to exclude Non-neutral sites and errors
-tutorial from paper (Exploring population size changes using SNP frequency spectra)
-### Site Filtering Recommendations
-For real data analysis, consider masking:
-1. Regions within 50kb of coding regions
-2. Mapping errors
-3. Low-confidence ancestral alleles
-4. CpG Islands (due to higher mutation rates, CpG-rich regions often exhibit higher mutation rates due to spontaneous deamination.)
 
 ## Usage
 
-If you define all parameters in config, you can run directly.
+
+### Basic Usage 
+
+#### Conda environment
+> **Note:** Before starting, please install conda environment, `Stairway Plot 2`, `Relate`, and `GONE`
+
 ```bash
-module load anaconda
-conda activate snakemake
-qlogin -l h_vmem=4G
-cd ./ne-traj-pipe
-snakemake --profile profile > test.log 2>&1 &
+module load nextflow
+export NXF_OPTS='-Xss256k -Xmx512m'
+# or make sure they are iin your environment
+nextflow run main.nf -profile local_no_Nehub_docker \
+    -params-file params.json \
+    --input_dir /path/to/input \
+    --output_dir /path/to/output
 ```
-Otherwise, you can define in your command line. The paramaters is followed by [Configuration](#configuration)
+
+#### Container environment 
+> **Note:** Before starting, please pull mirror and build `.sif`. Replace path of `.sif` to container setting of local_singularity in nextflow.config 
+
 ```bash
-module load anaconda
-conda activate snakemake
-qlogin -l h_vmem=4G
-cd ./ne-traj-pipe
-snakemake --profile profile \
-    --config vcffile="test" \
-    ref_genome="reference.fa" \
-    ancestral_genome="ancestral.fa" \
-    workdir="./results" \
-    numSampling=5 \
-    sampleSize=50 \
-    > test.log 2>&1 &
+module load singulairty
+module load nextflow
+export NXF_OPTS='-Xss256k -Xmx512m'
+# or make sure they are iin your environment
+nextflow run main.nf -profile local_singularity \
+    -params-file params.json \
+    --input_dir /path/to/input \
+    --output_dir /path/to/output
 ```
+
+### Using a Configuration File
+
+Parameter file refers to`./conf/params.config`, and `./conf/resources.config` has two setting for large resource requirement (`large`) and small resource requirement (`small`). Here, `large` is used for real data, `small` is used for simulation data.
+
+```bash
+nextflow run main.nf -profile local_singularity,small \
+    -params-file params.json \
+    --input_dir /path/to/input \
+    --output_dir /path/to/output
+```
+
+### Running Multiple Analyses in Parallel
+```bash
+nextflow run main.nf -profile local_singularity,large \
+    -params-file params.json \
+    --input_dir /path/to/input \
+    --output_dir /path/to/output
+```
+
+##### The pipeline provides two resource profiles:
+
+| Profile | Recommended For | Samples | Chromosomes | Memory |
+|---|---|---|---|---|
+| `small` | Testing, small datasets, simulation | ≤ 100 | ≤ 2 | Reduced (e.g. 4–8 GB per process) |
+| `large` | Production runs, large cohorts | > 100 | Many | Full (e.g. 16–160 GB per process) |
+| *(none)* | Uses default resources defined inline in each module; resource requirements are similar to `small` | — | — | — |
+
+| Profile | Executor | Software from | Container | Concurrency | Error strategy | Intended use |
+|---|---|---|---|---|---|---|---|
+| `local_no_Nehub_docker` | local (`queueSize 8`, `maxForks 9`) | Conda envs, activated per label | none | ≤ 8–9 parallel tasks in one job | `ignore` | Eddie or local machine with all conda envs installed |
+| `local_singularity` | local (`queueSize 8`, `maxForks 9`) | NeHub Singularity image | same `nehub.sif` (`--nv` GPU flag) | ≤ 8–9 parallel tasks in one job | `ignore` | Eddie, everything runs inside one interactive or array job |
+| `sge_singularity` | SGE (`queueSize 8`) | NeHub Singularity image | `/exports/eddie/scratch/$USER/nehub.sif` | 8 queued jobs | `ignore` | Eddie, each process submitted as its own SGE job |
+| `sge_no_singularity` | SGE (`queueSize 20`, 10 s submit rate) | Conda envs (Eddie's central anaconda) + `module load` for plink | none (but Singularity is enabled) | 20 queued jobs, `maxForks 9` | `retry` ×3 | Eddie production runs; per-job `h_vmem` = task memory + 4 GB; phlash on the GPU queue |
+| `github` | local | Conda envs created in CI | none |  default | default (stop) | GitHub Actions CI; also loads `conf/test.config` |
+
+---
 
 ## Cluster Usage
-set up in `/profile`
-### sge (recommend)
-```yaml
-cluster: "qsub -P roslin_HighlanderLab \
-         -o {log_dir}/{rule}.{jobid}.out \
-         -e {log_dir}/{rule}.{jobid}.err \
-         -l h_vmem={cluster.mem} \
-         -l h_rt={cluster.time} \
-         -pe sharedmem {cluster.threads} \
-         -R y"
+
+SGE configuration is defined in `nextflow.config`. The pipeline is optimised for SGE cluster environments (e.g. Eddie, University of Edinburgh).
+
+### Submitting on Eddie
+
+```bash
+qsub submit_nextflow.sh
 ```
-### drmaa
-please check drmaa path in your ```~/.bash_profile``` or equivalent: ```export DRMAA_LIBRARY_PATH=/exports/applications/gridengine/ge-8.6.5/lib/lx-amd64/libdrmaa.so```
-Also must login a node, otherwise report error 
-```
-OpenBLAS blas_thread_init: pthread_create failed for thread 7 of 16: Resource temporarily unavailable
-OpenBLAS blas_thread_init: RLIMIT_NPROC 200 current, 200 max
+#### Base on Conda and Installation
+
+```bash
+# submit_nextflow.sh
+#!/bin/bash
+#$ -N nextflow_master
+#$ -l h_vmem=8G
+#$ -l h_rt=48:00:00
+#$ -pe sharedmem 4
+#$ -cwd
+#$ -j y
+
+module load java
+module load nextflow
+export NXF_OPTS='-Xms1g -Xmx4g'
+
+nextflow run main.nf \
+    -profile local_singularity,large \
+    -params-file params.json \
+    --input_dir /path/to/input \
+    --output_dir /path/to/output \
+    --chromosomes 1 \
+    --population_file popLabel.txt
 ```
 
-check if conda.sh is included in ```~/.bashrc```, if not it will report error
-```/bin/bash: conda: command not found```
+
+
+#### Base on .sif 
+```bash
+# submit_nextflow.sh
+#!/bin/bash
+#$ -N nextflow_master
+#$ -l h_vmem=8G
+#$ -l h_rt=48:00:00
+#$ -pe sharedmem 4
+#$ -cwd
+#$ -j y
+
+module load singularity
+module load java
+module load nextflow
+export NXF_OPTS='-Xms1g -Xmx4g'
+
+export NXF_SINGULARITY_CACHEDIR=/exports/path/to/singularity_cache
+mkdir -p $NXF_SINGULARITY_CACHEDIR
+
+nextflow run main.nf \
+    -profile local_singularity,large \
+    -params-file params.json \
+    --input_dir /path/to/input \
+    --output_dir /path/to/output \
+    --chromosomes 1 \
+    --population_file popLabel.txt
+```
+
+
+### Monitor Jobs
+
+```bash
+qstat                        # view job status
+tail -f .nextflow.log        # view Nextflow log in real time
+```
+
+### Resume Interrupted Runs
+
+```bash
+nextflow run main.nf -profile eddie_singularity,large -resume
+```
+
+---
+
+## Running with Docker / Singularity
+
+> **Note:** If you are not familiar with Docker or Singularity, skip this section and follow the [Conda-based installation](#installation) instead.
+
+Pre-pull the image once to avoid multiple nodes downloading simultaneously.
+> **Note:** This step requires at least 16 GB memory. Request an interactive node first:
+> ```bash
+> qlogin -l h_vmem=16G
+> ```
+
+**Option 1: Pull from Docker Hub (requires access credentials)**
+```bash
+module load singularity
+export SINGULARITY_DOCKER_USERNAME=aprilyuzhang
+export SINGULARITY_DOCKER_PASSWORD=${PASSWORD} # contact author if need
+export SINGULARITY_TMPDIR=/exports/eddie/scratch/$USER/tmp
+mkdir -p /exports/eddie/scratch/$USER/tmp
+
+singularity pull \
+    --tmpdir /exports/eddie/scratch/$USER/tmp \
+    ./nehub.sif \
+    docker://aprilyuzhang/nehub:latest
+```
+**Option 2: Build from Dockerfile (no credentials required)**
+```bash
+# 1. Build Docker image locally on your machine
+docker build --build-arg BUILDPLATFORM=linux/amd64 \
+    -t nehub:latest \
+    -f docker/Dockerfile .
+
+# 2. Save as tar
+docker save nehub:latest -o nehub.tar
+gzip nehub.tar
+
+# 3. Transfer to Eddie
+scp nehub.tar.gz /path/to/image
+
+# 4. On Eddie, convert to SIF
+module load singularity
+# set SINGULARITY_TMPDIR to avoid FATAL ERROR: Out of memory (cache_alloc)
+export SINGULARITY_TMPDIR=/exports/eddie/scratch/$USER/tmp
+mkdir -p $SINGULARITY_TMPDIR
+gunzip /path/to/image/nehub.tar.gz
+singularity build \
+    ./nehub.sif \
+    docker-archive://path/to/image/nehub.tar
+```
+
+**Option 3: Build from Dockerfile and push to private repository (no credentials required)**
+```bash
+# 1. Build Docker image locally on your machine
+docker build --build-arg BUILDPLATFORM=linux/amd64 \
+    -t nehub:latest \
+    -f docker/Dockerfile .
+
+docker tag nehub:latest aprilyuzhang/nehub:latest
+docker push aprilyuzhang/nehub:latest
+module load singularity
+export SINGULARITY_DOCKER_USERNAME=aprilyuzhang
+export SINGULARITY_DOCKER_PASSWORD=${PASSWORD}
+export SINGULARITY_TMPDIR=/exports/eddie/scratch/$USER/tmp
+mkdir -p /exports/eddie/scratch/$USER/tmp
+
+singularity pull \
+    --tmpdir /exports/eddie/scratch/$USER/tmp \
+    $USER/nehub.sif \
+    docker://aprilyuzhang/nehub:latest
+```
+
+---
 
 ## Installation
-`git clone git@github.com:HighlanderLab/ne-traj-pipe.git`
 
-### Environment Setup
-Recommondation of building environments on Eddie
-#### PSMC
-`source activate ne_pipe_psmc`  
-Origianally created as:  
-`conda create -n ne_pipe_psmc -c bioconda -c conda-forge psmc`
+> **Recommendation:** If you are not familiar with Docker, use the Conda-based installation below. Each tool is installed into a separate Conda environment to avoid dependency conflicts.
 
-#### MSMC2 
-`source activate ne_pipe_msmc2`  
-`msmc2_Linux`
-Originally created as:  
-`conda create -n ne_pipe_msmc2 -c bioconda -c conda-forge msmc2`
+### Requirements
 
-#### SMC++ 
-Should be run via singularity
-```
-module load singularity/3.11.4 # or similar
-export SINGULARITY_TMPDIR="/exports/eddie/scratch/username/"
-singularity run docker://terhorst/smcpp:latest -h # replace -h by SMC++ parameters
-```
-test:
-```
-module load singularity
-export SINGULARITY_TMPDIR="/home/s2587593/PigData/NeTest"
-singularity run docker://terhorst/smcpp:latest vcf2smc ./test_data/con0.vcf.gz ../NeTest/con0/chr1.smc.gz chr1 
+- Nextflow >= 24.10.2
+- Conda (recommended: [Miniconda](https://docs.conda.io/en/latest/miniconda.html))
+- Java >= 17
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/AprilYUZhang/NeTrajHub.git
+cd NeTrajHub
 ```
 
-Error:
-```
-FATAL:   Unable to handle docker://terhorst/smcpp:latest uri: while building SIF from layers: while creating squashfs: create command failed: exit status 1: 
-FATAL ERROR: Out of memory (cache_alloc)
-```
-Solution:
-```
-qlogin use 16G memory.
-```
-#### phlash
-phlash requires a GPU to run fast. THere are GPUs available on Eddie, but we probably have to play around a little to figure out how to use these. Hannes has set up two versions.
+### Conda Environments
+| Conda env | YAML file | Main contents | Used by process label | Notes |
+|---|---|---|---|---|
+| `basic_Ne` | `conf/envs/basic_tools.yml` | PSMC, MSMC2, plink, bcftools, other basic tools | `basic_Ne`, `plink` | Core environment for most steps |
+| `ts_tools` | `conf/envs/ts_tools.yml` | tskit, tsinfer, tsdate, tszip, msprime | `ts_tools` | Then run `conda install -n ts_tools -y -c conda-forge tszip msprime` |
+| `bcftools` | `conf/envs/bcftools.yml` | bcftools | `bcftools` | VCF handling and consensus FASTA |
+| `smcpp` | `conf/envs/smcpp.yml` | SMC++ | `smcpp` | Requires Python 3.10 (`longintrepr.h` was removed in Python 3.11+) |
+| `phlash` | `conf/envs/phlash.yml` | phlash | `ne_pipe_phlash` | Works with both GPU and CPU builds |
 
-##### No GPU
-This is not a conda environment! Python venv in:  
-`/exports/cmvm/eddie/eb/groups/HighlanderLab/share/venvs/ne_pipe_phlash_nogpu`
-```
-##Setup code (so we remember)
-#python -m venv --copies ne_pipe_phlash_nogpu
-#source ne_pipe_phlash_nogpu/bin/activate
-#python -m pip install -U pip setuptools
-#python -m pip install 'phlash'
-```
-##### With GPU support
-This is not a conda environment! Python venv in:  
-`/exports/cmvm/eddie/eb/groups/HighlanderLab/share/venvs/ne_pipe_phlash_gpu`
-```
-#Setup code
-python -m venv --copies ne_pipe_phlash_gpu
-source ne_pipe_phlash_gpu/bin/activate
-python -m pip install -U pip setuptools
-python -m pip install 'phlash[gpu]'
+> **Note:** if smcpp Installation has issue, alternatively, use the Singularity image (no installation required and more stable)
+
+> **Note:** Ensure your VCF file header includes chromosome lengths before running SMC++. See [VCF Header Fix](#vcf-header-fix) below.
+
+> **Note:** If no GPU is detected, phlash automatically falls back to CPU. Installing the standard version (`pip install phlash`) will use GPU if available, or CPU otherwise — no need to maintain two separate environments.
+
+##### Known potential pHlash Installation Issues
+
+**1. `dinopy` build failure:**
+
+If you encounter a Cython compilation error related to `isinstance(seq, (int, long))`:
+```bash
+# download dinopy source
+pip download dinopy --no-deps -d ./dinopy_src
+# unpack and edit processors.pyx:
+# change: isinstance(seq, (int, long))
+# to:     isinstance(seq, int)
+pip install ./dinopy-3.0.0/
 ```
 
-To activate, run:  
-```
-source /exports/cmvm/eddie/eb/groups/HighlanderLab/share/venvs/ne_pipe_phlash_nogpu/bin/activate
-# then, try
-python
->>> import phlash
-```
-#### GONE 
-`git clone https://github.com/esrud/GONE.git`
+**2. JAX >= 0.6.0 incompatibility:**
 
-#### Stairway
-get easySFS.py 
-`git clone https://github.com/isaacovercast/easySFS.git`
-Dowload package from https://github.com/xiaoming-liu/stairway-plot-v2
-`unzip git_soft/stairway_plot_v2.1.2.zip -d /destination/path/`
+If JAX version is >= 0.6.0, edit `gpu.py` in the phlash installation:
+```python
+# change from:
+return jax.pure_callback(
+    kern, result_shape_dtype, pp=params, index=index, grad=grad,
+    vmap_method='legacy_vectorized'
+)
+
+# to:
+return jax.pure_callback(
+    kern, result_shape_dtype, pp=params, index=index, grad=grad,
+)
+```
+
+#### GONE
+
+```bash
+git clone https://github.com/esrud/GONE.git /path/to/GONE
+chmod -R +x /path/to/GONE/Linux/PROGRAMMES/
+```
+
+#### Stairway Plot v2
+
+```bash
+git clone https://github.com/isaacovercast/easySFS.git /path/to/easySFS
+chmod +x /path/to/easySFS/easySFS.py
+
+# Download stairway_plot_v2.1.3.zip from:
+# https://github.com/xiaoming-liu/stairway-plot-v2
+unzip stairway_plot_v2.1.3.zip
+```
 
 #### Relate
-Dowload package from https://myersgroup.github.io/relate/
-`tar -xvzf ./relate_v1.2.2_x86_64_dynamic.tgz -C /destination/path/`
 
-2. Ensure `conda.sh` is in `~/.bashrc`
-
-#### dadi-cli
-`conda create -n ne_pipe_dadiCli -c conda-forge dadi-cli` 
-
-#### fastsimcoal2
-`conda create -n ne_pipe_fastsimcoal2 -c bioconda fastsimcoal2`
-
-### hapNe
-
-Have set up following the suggestions, making a conda environment using the supplied YML file.
+Download the pre-built binary from https://myersgroup.github.io/relate/:
+```bash
+tar -xvzf relate_v1.2.2_x86_64_dynamic.tgz -C /path/to/relate/
 ```
-conda activate ne_pipe_hapNe
+
+Or build from source:
+```bash
+git clone --depth 1 https://github.com/MyersGroup/relate.git /path/to/relate_src
+cd /path/to/relate_src
+rm -rf build && mkdir build && cd build
+cmake .. && make -j$(nproc)
+cp /path/to/relate_src/bin/* /path/to/relate/
 ```
+
+---
+
+## VCF Header Fix
+
+Some tools (e.g. SMC++) require the VCF header to include chromosome lengths. Use the following script to add them:
+
+```bash
+i=chr_number
+bcftools view -h chr${i}.vcf.gz > old_header.txt
+
+awk 'BEGIN{while(getline < "ref.fa.fai"){len["chr"$1]=$2}}
+/^##contig=<ID=/ {match($0,/ID=([^,>]+)/,a); chr=a[1];
+    if(chr in len){print "##contig=<ID="chr",length="len[chr]">"}
+    else {print $0}}
+!/##contig=<ID=/ {print $0}' old_header.txt > new_header.txt
+
+bcftools reheader -h new_header.txt -o chr${i}_new.vcf.gz chr${i}.vcf.gz
+
+mv chr${i}.vcf.gz chr${i}_old.vcf.gz
+mv chr${i}_new.vcf.gz chr${i}.vcf.gz
+```
+
+---
+
+## Important Notes
+
+- **Chromosome naming:** The pipeline currently only recognises chromosomes in the format `chr1`, `chr2`, ..., `chrX`. Please ensure all input VCF files, reference genomes, and ancestral genomes use the `chr` prefix. Chromosomes named `1`, `2`, etc. will cause the pipeline to fail silently.
+- **Docker image:** The Docker image `aprilyuzhang/nehub` is currently private. Conda-based installation is recommended for users without Docker Hub access.
+- **GPU support:** pHlash benefits significantly from GPU acceleration. On Eddie, request a GPU node with `-q gpu -l gpu=1` for pHlash jobs.
+- **Refernece genome:** Make sure `Refernece genome` is consistent with vcf REF

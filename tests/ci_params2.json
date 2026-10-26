@@ -1,0 +1,27 @@
+
+{
+
+  "method": "SMCpp", 
+
+  "option": {
+
+    "ref_genome": "/exports/eddie/scratch/s2587593/Ne-nextflow/tests/test_data/test.fa",
+
+    "ancestral_genome": "/exports/eddie/scratch/s2587593/Ne-nextflow/tests/test_data/test.fa"
+
+  },
+
+  "GONE":     { "installation_path": "/opt/GONE" },
+
+  "Relate":   { "Relate_path": "/opt/relate" },
+
+  "stairway": {
+
+    "easysfs_path":  "/opt/easySFS/easySFS.py",
+
+    "stairway_path": "/opt/stairway_plot_es"
+
+  }
+
+}
+
