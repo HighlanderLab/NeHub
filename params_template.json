@@ -1,0 +1,78 @@
+{
+    "input_dir": "/path/to/input",
+    "output_dir": "/path/to/output",
+    "method": "GONE,SMCpp,stairway,PSMC,Relate,tskit",
+    "chromosomes": [1, 2],
+    "mutation_rate": 6.3e-9,
+    "population_file": "popLabel.txt",
+    "sampling": 1,
+    "seed": 100,
+
+    "option": {
+        "ref_genome": "/path/to/reference.fa",
+        "ancestral_genome": "/path/to/ancestral.fa"
+    },
+    "PSMC": {
+        "ref_genome": "/path/to/reference.fa",
+        "timeSegmentPattern": "4+50*1+4+6",
+        "bin_size": 100
+    },
+    "MSMC": {
+        "sampleSize": 4,
+        "timeSegmentPattern": "1*2+25*1+1*2+1*3",
+        "rhoOverMu": 0.22,
+        "maxIterative": 5
+    },
+    "tskit": {
+        "ancestral_genome": "/path/to/ancestral.fa",
+        "timepoint": 64,
+        "max_file_size": 2097152000,
+        "chunk_size": 2048
+    },
+    "stairway": {
+        "easysfs_path": "/path/to/tools/easySFS/easySFS.py",
+        "stairway_path": "/path/to/tools/stairway_plot_es",
+        "ancestral_genome": "/path/to/ancestral.fa",
+        "fold": 0,
+        "ploids": 2,
+        "generation_interval": 3.6,
+        "pct_training": 0.67,
+        "nrand": "7\t15\t22\t28",
+        "ninput": 40,
+        "xrange": "0.1,10000",
+        "yrange": "0,0",
+        "xspacing": 2,
+        "yspacing": 2,
+        "fontsize": 12
+    },
+    "Relate": {
+        "Relate_path": "/path/to/tools/relate",
+        "ancestral_genome": "/path/to/ancestral.fa",
+        "genMap_dir": "/path/to/genetic_maps",
+        "initial_N": 20000,
+        "threshold": 0.5,
+        "num_iter": 5,
+        "num_chunk": 10,
+        "bins": "1.8573,6.8573,0.3",
+        "seed": 100,
+        "years_per_gen": 3.6
+    },
+    "GONE": {
+        "installation_path": "/path/to/tools/GONE",
+        "PHASE": 2,
+        "cMMb": 1,
+        "DIST": 1,
+        "NGEN": 2000,
+        "NBIN": 200,
+        "MAF": 0.0,
+        "ZERO": 1,
+        "maxNCHROM": -99,
+        "maxNSNP": 50000,
+        "hc": 0.05,
+        "REPS": 40,
+        "threads": 8
+    },
+    "Phlash": {
+        "chr_test": 0
+    }
+}

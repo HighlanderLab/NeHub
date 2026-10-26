@@ -26,7 +26,7 @@ A Nextflow pipeline for estimating effective population size (Ne) trajectories f
 ## Available Tools
 
 | Tools | Input | Link | Install Approach | Available Now |
-|---|---|---|---|---|---|
+|---|---|---|---|---|
 | GONE | plink file (.ped, .bim) | https://github.com/esrud/GONE | git clone | Yes |
 | PSMC | fastq | https://github.com/lh3/psmc | conda install | Yes |
 | MSMC2 | vcf | https://github.com/stschiff/msmc2 | conda install | Yes |
@@ -35,6 +35,7 @@ A Nextflow pipeline for estimating effective population size (Ne) trajectories f
 | tsinfer and tsdate | ts | https://tskit.dev/ | conda install | Yes |
 | Relate | haps and sample | https://myersgroup.github.io/relate/ | package | Yes |
 | Stairway Plot v2 | SFS | https://github.com/xiaoming-liu/stairway-plot-v2 | package | Yes |
+
 
 ### Memory Requirements
 - SMC++ requires at least 16 GB memory if use `singularity run docker://terhorst/smcpp:latest`
@@ -53,8 +54,8 @@ export NXF_OPTS='-Xss256k -Xmx512m'
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/AprilYUZhang/NeTrajHub.git
-cd NeTrajHub
+git clone https://github.com/HighlanderLab/NeHub.git
+cd NeHub
 ```
 
 ---
@@ -63,7 +64,7 @@ cd NeTrajHub
 
 The pipeline uses configuration files located in the `conf/` directory, including global parameters and tool-specific configurations.
 
-### Parameter Input Methods
+### Parameter Input Approaches
 
 1. **Command Line Parameters**: Direct input through the command line
 ```bash
@@ -85,8 +86,25 @@ Detail see in `./conf/params.config`.
 }
 ```
 
-> **Note:** If use `singularity`, the reference genome, ancestral genome, and container image paths must all be **absolute paths**. Relative paths (e.g. `./tests/test_data/test.fa`) will not work inside Singularity containers as the working directory differs from the host.
 
+**3. Config file**
+
+Copy `conf/params.config`, edit it, and pass it with `-c`. Unlike JSON, a config file can hold comments, and can reuse values (e.g. `params.option.ancestral_genome`):
+
+```bash
+cp conf/params.config my_params.config  # edit the values
+nextflow run main.nf -profile local_singularity,small -c my_params.config
+```
+
+> **Tip:** Keep the whole copied file rather than a few lines. Grouped settings such as `Relate = [ ... ]` are replaced as a block, so a config file that only sets `Relate = [ Relate_path: ... ]` would drop the other Relate settings. To change a single nested value, use the command line or the JSON file instead.
+
+**Check the final values** before a long run:
+
+```bash
+nextflow config -profile local_singularity,small -params-file params.json | grep -A15 "Relate"
+```
+
+> **Note:** If use `singularity`, the reference genome, ancestral genome, and container image paths must all be **absolute paths**. Relative paths (e.g. `./tests/test_data/test.fa`) will not work inside Singularity containers as the working directory differs from the host.
 
 ## Usage
 
@@ -129,10 +147,7 @@ nextflow run main.nf -profile local_singularity,small \
     -params-file params.json \
     --input_dir /path/to/input \
     --output_dir /path/to/output
-```
-
-### Running Multiple Analyses in Parallel
-```bash
+# OR
 nextflow run main.nf -profile local_singularity,large \
     -params-file params.json \
     --input_dir /path/to/input \
@@ -147,8 +162,10 @@ nextflow run main.nf -profile local_singularity,large \
 | `large` | Production runs, large cohorts | > 100 | Many | Full (e.g. 16–160 GB per process) |
 | *(none)* | Uses default resources defined inline in each module; resource requirements are similar to `small` | — | — | — |
 
+##### The pipeline provides five executor profiles:
+
 | Profile | Executor | Software from | Container | Concurrency | Error strategy | Intended use |
-|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|
 | `local_no_Nehub_docker` | local (`queueSize 8`, `maxForks 9`) | Conda envs, activated per label | none | ≤ 8–9 parallel tasks in one job | `ignore` | Eddie or local machine with all conda envs installed |
 | `local_singularity` | local (`queueSize 8`, `maxForks 9`) | NeHub Singularity image | same `nehub.sif` (`--nv` GPU flag) | ≤ 8–9 parallel tasks in one job | `ignore` | Eddie, everything runs inside one interactive or array job |
 | `sge_singularity` | SGE (`queueSize 8`) | NeHub Singularity image | `/exports/eddie/scratch/$USER/nehub.sif` | 8 queued jobs | `ignore` | Eddie, each process submitted as its own SGE job |
@@ -159,31 +176,41 @@ nextflow run main.nf -profile local_singularity,large \
 
 ## Cluster Usage
 
-SGE configuration is defined in `nextflow.config`. The pipeline is optimised for SGE cluster environments (e.g. Eddie, University of Edinburgh).
+The pipeline is set up for SGE clusters such as Eddie (University of Edinburgh). All cluster settings are in `nextflow.config`. On Eddie you can run it in one of two ways:
+
+| Mode | Profiles | How it works | Best for |
+|---|---|---|---|
+| **Local executor** | `local_singularity`, `local_no_Nehub_docker` | Submit **one** job; Nextflow runs every process inside it, sharing that job's CPUs and memory. | Simulations, small datasets, testing (real data also works if you limit how many processes run at once) |
+| **SGE executor** | `sge_singularity`, `sge_no_singularity` | Nextflow runs as a lightweight head process and submits **each process as its own SGE job**, with its own CPU and memory request. | Real data, large cohorts, many chromosomes (<br>Run Nextflow on a login node inside `screen`/`tmux` (so it keeps running after you log out) or on a node with submit rights.<br>⚠️ Long runs may be cut off if the session or node disconnects — resume with `-resume`.) |
 
 ### Submitting on Eddie
 
-```bash
-qsub submit_nextflow.sh
-```
-#### Base on Conda and Installation
+#### Option A — Local executor (one job runs the whole pipeline)
+
+All processes run inside a single job, so request enough CPUs and memory for everything.
+
+**Conda environments**
 
 ```bash
-# submit_nextflow.sh
 #!/bin/bash
-#$ -N nextflow_master
-#$ -l h_vmem=8G
+# submit_nextflow.sh
+#$ -N nextflow_main
+#$ -pe sharedmem 8
+#$ -l h_vmem=16G          # per slot: 8 x 16G = 128G in total
 #$ -l h_rt=48:00:00
-#$ -pe sharedmem 4
 #$ -cwd
 #$ -j y
 
 module load java
 module load nextflow
+
+# Stop tools from sizing themselves to the whole node (Eddie limits virtual memory)
 export NXF_OPTS='-Xms1g -Xmx4g'
+export MALLOC_ARENA_MAX=2
+export OMP_NUM_THREADS=${NSLOTS:-1} OPENBLAS_NUM_THREADS=${NSLOTS:-1} MKL_NUM_THREADS=${NSLOTS:-1}
 
 nextflow run main.nf \
-    -profile local_singularity,large \
+    -profile local_no_Nehub_docker,large \
     -params-file params.json \
     --input_dir /path/to/input \
     --output_dir /path/to/output \
@@ -191,26 +218,31 @@ nextflow run main.nf \
     --population_file popLabel.txt
 ```
 
+**Singularity image (`.sif`)**
 
+Same as above, but load Singularity, give it a scratch directory, and use the `local_singularity` profile. Set the `.sif` path in `nextflow.config` first.
 
-#### Base on .sif 
 ```bash
-# submit_nextflow.sh
 #!/bin/bash
-#$ -N nextflow_master
-#$ -l h_vmem=8G
+# submit_nextflow.sh
+#$ -N nextflow_main
+#$ -pe sharedmem 8
+#$ -l h_vmem=16G
 #$ -l h_rt=48:00:00
-#$ -pe sharedmem 4
 #$ -cwd
 #$ -j y
 
 module load singularity
 module load java
 module load nextflow
-export NXF_OPTS='-Xms1g -Xmx4g'
 
-export NXF_SINGULARITY_CACHEDIR=/exports/path/to/singularity_cache
-mkdir -p $NXF_SINGULARITY_CACHEDIR
+export NXF_OPTS='-Xms1g -Xmx4g'
+export MALLOC_ARENA_MAX=2
+export OMP_NUM_THREADS=${NSLOTS:-1} OPENBLAS_NUM_THREADS=${NSLOTS:-1} MKL_NUM_THREADS=${NSLOTS:-1}
+
+export SINGULARITY_TMPDIR=/exports/eddie/scratch/$USER/tmp
+export NXF_SINGULARITY_CACHEDIR=/exports/eddie/scratch/$USER/singularity_cache
+mkdir -p "$SINGULARITY_TMPDIR" "$NXF_SINGULARITY_CACHEDIR"
 
 nextflow run main.nf \
     -profile local_singularity,large \
@@ -221,20 +253,54 @@ nextflow run main.nf \
     --population_file popLabel.txt
 ```
 
+Submit with:
+
+```bash
+qsub submit_nextflow.sh
+```
+
+#### Option B — SGE executor (each process is its own job)
+
+Run Nextflow on a node that can submit jobs (e.g. a login node), inside `screen` or `tmux` so it keeps running after you log out. Nextflow then submits every process with `qsub`.
+
+```bash
+screen -S nehub            # reattach later with: screen -r nehub
+module load java nextflow
+export NXF_OPTS='-Xms1g -Xmx4g'
+
+nextflow run main.nf \
+    -profile sge_no_singularity,large \
+    -params-file params.json \
+    --input_dir /path/to/input \
+    --output_dir /path/to/output \
+    --chromosomes 1 \
+    --population_file popLabel.txt
+```
 
 ### Monitor Jobs
 
 ```bash
-qstat                        # view job status
-tail -f .nextflow.log        # view Nextflow log in real time
+qstat -u $USER                       # your running / queued jobs
+tail -f .nextflow.log                # Nextflow log in real time
+qacct -j <job_id>                    # why a finished job stopped (check failed / exit_status / maxvmem)
 ```
+
+> A job that disappears from `qstat` with `failed 46: execd enforced h_vmem limit` in `qacct` ran out of (virtual) memory. Increase `h_vmem` or check the thread settings above.
 
 ### Resume Interrupted Runs
 
-```bash
-nextflow run main.nf -profile eddie_singularity,large -resume
-```
+Run the same command again from the **same launch directory** (where `.nextflow/` and `work/` are), with `-resume` added. Completed tasks are reused from the cache.
 
+```bash
+nextflow run main.nf \
+    -profile local_singularity,large \
+    -params-file params.json \
+    --input_dir /path/to/input \
+    --output_dir /path/to/output \
+    --chromosomes 1 \
+    --population_file popLabel.txt \
+    -resume
+```
 ---
 # Build environment 
 
@@ -315,7 +381,10 @@ singularity pull \
 
 > **Recommendation:** If you are not familiar with Docker, use the Conda-based installation below. Each tool is installed into a separate Conda environment to avoid dependency conflicts.
 
-Users can install all tools with `install/install_all.sh`, install only selected tools with the same script, or follow the manual commands in the sections below.
+### requirement
+- Conda (recommended: [Miniconda](https://docs.conda.io/en/latest/miniconda.html))
+
+Users can install all tools with `install/install_all.sh`, install only selected tools with the same script, or follow the manual commands in the sections below [Install step by step](#install-step-by-step).
 
 The script runs the similar install commands as the CI workflow (`.github/workflows/ci.yml`), which is tested on every pull request.
 
@@ -332,10 +401,22 @@ bash install/install_all.sh smcpp relate        # only SMC++ and Relate
 bash install/install_all.sh conda               # all conda environments
 bash install/install_all.sh standalone          # GONE, Relate, Stairway Plot 2, easySFS
 ```
-### requirement
-- Conda (recommended: [Miniconda](https://docs.conda.io/en/latest/miniconda.html))
+> **⚠️ Next step (important):** Once installation succeeds, the standalone tools are in your tools folder (`./tools` by default, or the folder given with `--tools-dir`). Their paths must be in your parameter file before the pipeline can run:
+>
+> 1. Copy it and replace the remaining `/path/to/...` entries (Install path,input, output, genomes, genetic maps):
+>    ```bash
+>    cp params_template.json params.json
+>    grep -n '/path/to' params.json   # anything listed still needs editing
+>    ```
+> 2. Run the pipeline:
+>    ```bash
+>    nextflow run main.nf -profile <profile> -params-file params.json
+>    ```
 
-### Conda Environments
+### Install step by step
+
+#### Conda Environments
+
 | Conda env | YAML file | Main contents | Used by process label | Notes |
 |---|---|---|---|---|
 | `basic_Ne` | `conf/envs/basic_tools.yml` | PSMC, MSMC2, plink, bcftools, other basic tools | `basic_Ne`, `plink` | Core environment for most steps |

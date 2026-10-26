@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  push:
+    branches: [Ne-nextflow]
   pull_request:
     branches: [Ne-nextflow]
 
