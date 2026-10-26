@@ -18,7 +18,7 @@ A Nextflow pipeline for estimating effective population size (Ne) trajectories f
 
 > **Chromosome naming:** The pipeline currently only recognises chromosomes in the format `chr1`, `chr2`, ..., `chrX`. Chromosomes named `1`, `2`, etc. (without the `chr` prefix) will not be processed correctly. Please ensure your VCF files and reference genome use the `chr` prefix convention.
 
-> **Docker vs Conda:** If you are not familiar with Docker or Singularity, we recommend using the **Conda-based installation** described in the [Installation](#installation) section. `PSMC` and `MSMC2` are included in `basic_tools.yml`. `SMC++`, `pHlash`, and `tsinfer/tsdate` each require a separate Conda environment as detailed below. `Stairway Plot 2`, `Relate`, and `GONE` are installed as standalone packages, with their installation paths specified in the pipeline configuration.
+> **Docker vs Conda:** If you are not familiar with Docker or Singularity, we recommend using the **Conda-based installation** described in the [Installation](#installation) section. `PSMC` and `MSMC` are included in `basic_tools.yml`. `SMC++`, `PHLASH`, and `tsinfer/tsdate/tskit` each require a separate Conda environment as detailed below. `Stairway Plot`, `Relate`, and `GONE` are installed as standalone packages, with their installation paths specified in the pipeline configuration.
 
 ---
 
@@ -41,17 +41,17 @@ A Nextflow pipeline for estimating effective population size (Ne) trajectories f
 |---|---|---|---|---|
 | GONE | plink file (.ped, .bim) | https://github.com/esrud/GONE | git clone | Yes |
 | PSMC | fastq | https://github.com/lh3/psmc | conda install | Yes |
-| MSMC2 | vcf | https://github.com/stschiff/msmc2 | conda install | Yes |
+| MSMC | vcf | https://github.com/stschiff/msmc2 | conda install | Yes |
 | SMC++ | vcf.gz | https://github.com/popgenmethods/smcpp | conda install |Yes |
-| pHlash | vcf.gz | https://github.com/jthlab/phlash | pip install | Yes |
-| tsinfer and tsdate | ts | https://tskit.dev/ | conda install | Yes |
+| PHLASH | vcf.gz | https://github.com/jthlab/phlash | pip install | Yes |
+| tsinfer & tsdate & tskit | ts | https://tskit.dev/ | conda install | Yes |
 | Relate | haps and sample | https://myersgroup.github.io/relate/ | package | Yes |
-| Stairway Plot v2 | SFS | https://github.com/xiaoming-liu/stairway-plot-v2 | package | Yes |
+| Stairway Plot | SFS | https://github.com/xiaoming-liu/stairway-plot-v2 | package | Yes |
 
 
 ### Memory Requirements
 - SMC++ requires at least 16 GB memory if use `singularity run docker://terhorst/smcpp:latest`
-- pHlash benefits from GPU acceleration
+- PHLASH benefits from GPU acceleration
 - Java memory settings:
 ```bash
 export NXF_OPTS='-Xss256k -Xmx512m'
@@ -181,7 +181,7 @@ nextflow run main.nf -profile local_singularity,large \
 | `local_no_Nehub_docker` | local (`queueSize 8`, `maxForks 9`) | Conda envs, activated per label | none | ≤ 8–9 parallel tasks in one job | `ignore` | Eddie or local machine with all conda envs installed |
 | `local_singularity` | local (`queueSize 8`, `maxForks 9`) | NeHub Singularity image | same `nehub.sif` (`--nv` GPU flag) | ≤ 8–9 parallel tasks in one job | `ignore` | Eddie, everything runs inside one interactive or array job |
 | `sge_singularity` | SGE (`queueSize 8`) | NeHub Singularity image | `/exports/eddie/scratch/$USER/nehub.sif` | 8 queued jobs | `ignore` | Eddie, each process submitted as its own SGE job |
-| `sge_no_singularity` | SGE (`queueSize 20`, 10 s submit rate) | Conda envs (Eddie's central anaconda) + `module load` for plink | none (but Singularity is enabled) | 20 queued jobs, `maxForks 9` | `retry` ×3 | Eddie production runs; per-job `h_vmem` = task memory + 4 GB; phlash on the GPU queue |
+| `sge_no_singularity` | SGE (`queueSize 20`, 10 s submit rate) | Conda envs (Eddie's central anaconda) + `module load` for plink | none (but Singularity is enabled) | 20 queued jobs, `maxForks 9` | `retry` ×3 | Eddie production runs; per-job `h_vmem` = task memory + 4 GB; PHLASH on the GPU queue |
 | `github` | local | Conda envs created in CI | none |  default | default (stop) | GitHub Actions CI; also loads `conf/test.config` |
 
 ---
@@ -411,7 +411,7 @@ bash install/install_all.sh
 ```bash
 bash install/install_all.sh smcpp relate        # only SMC++ and Relate
 bash install/install_all.sh conda               # all conda environments
-bash install/install_all.sh standalone          # GONE, Relate, Stairway Plot 2, easySFS
+bash install/install_all.sh standalone          # GONE, Relate, Stairway Plot, easySFS
 ```
 > **⚠️ Next step (important):** Once installation succeeds, the standalone tools are in your tools folder (`./tools` by default, or the folder given with `--tools-dir`). Their paths must be in your parameter file before the pipeline can run:
 >
@@ -435,7 +435,7 @@ bash install/install_all.sh standalone          # GONE, Relate, Stairway Plot 2,
 | `ts_tools` | `conf/envs/ts_tools.yml` | tskit, tsinfer, tsdate, tszip, msprime | `ts_tools` | Then run `conda install -n ts_tools -y -c conda-forge tszip msprime` |
 | `bcftools` | `conf/envs/bcftools.yml` | bcftools | `bcftools` | VCF handling and consensus FASTA |
 | `smcpp` | `conf/envs/smcpp.yml` | SMC++ | `smcpp` | Requires Python 3.10 (`longintrepr.h` was removed in Python 3.11+) |
-| `phlash` | `conf/envs/phlash.yml` | phlash | `ne_pipe_phlash` | Works with both GPU and CPU builds |
+| `phlash` | `conf/envs/phlash.yml` | PHLASH | `ne_pipe_phlash` | Works with both GPU and CPU builds |
 
 > **Note:** if smcpp Installation has issue, alternatively, use the Singularity image (no installation required and more stable)
 
@@ -443,7 +443,7 @@ bash install/install_all.sh standalone          # GONE, Relate, Stairway Plot 2,
 
 > **Note:** If no GPU is detected, phlash automatically falls back to CPU. Installing the standard version (`pip install phlash`) will use GPU if available, or CPU otherwise — no need to maintain two separate environments.
 
-##### Known potential pHlash Installation Issues
+##### Known potential PHLASH Installation Issues
 
 **1. `dinopy` build failure:**
 
@@ -535,5 +535,5 @@ mv chr${i}_new.vcf.gz chr${i}.vcf.gz
 
 - **Chromosome naming:** The pipeline currently only recognises chromosomes in the format `chr1`, `chr2`, ..., `chrX`. Please ensure all input VCF files, reference genomes, and ancestral genomes use the `chr` prefix. Chromosomes named `1`, `2`, etc. will cause the pipeline to fail silently.
 - **Docker image:** The Docker image `aprilyuzhang/nehub` is currently private. Conda-based installation is recommended for users without Docker Hub access.
-- **GPU support:** pHlash benefits significantly from GPU acceleration. On Eddie, request a GPU node with `-q gpu -l gpu=1` for pHlash jobs.
+- **GPU support:** PHLASH benefits significantly from GPU acceleration. On Eddie, request a GPU node with `-q gpu -l gpu=1` for pHlash jobs.
 - **Refernece genome:** Make sure `Refernece genome` is consistent with vcf REF
