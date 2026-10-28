@@ -51,13 +51,14 @@ def add_diploid_sites(vcf, samples,ancestral_fa,sample_name):
 
     for variant in vcf:  # Loop over variants, each assumed at a unique site
         anc_record=ancestral_fa[str(variant.CHROM)]
-        ancestral = anc_record.seq[variant.POS-1]
-        progressbar.update(variant.POS - pos)
-        if pos == variant.POS:
+        pos_0_based = variant.POS - 1
+        ancestral = anc_record.seq[pos_0_based]
+        progressbar.update(pos_0_based - pos)
+        if pos == pos_0_based:
             print(f"Duplicate entries at position {pos}, ignoring all but the first")
             continue
         else:
-            pos = variant.POS
+            pos = pos_0_based
         if any([not phased for _, _, phased in variant.genotypes]):
             raise ValueError("Unphased genotypes for variant at position", pos)
         alleles = [variant.REF.upper()] + [v.upper() for v in variant.ALT]
